@@ -29,28 +29,13 @@ public class StereoResponseImpl implements StereoResponse {
    */
   StereoResponseImpl(HttpResponse rawHttpResponse) {
     this.rawHttpResponse = rawHttpResponse;
-    LOG.info("Constructed StereoResponse 1: " + rawHttpResponse);
     this.rawHttpEntity = rawHttpResponse.getEntity();
-    LOG.info("Constructed StereoResponse 2: " + rawHttpEntity);
     this.encoding = String.valueOf(this.rawHttpEntity.getContentEncoding());
-    LOG.info("Constructed StereoResponse 3: " + encoding);
     this.contentType = String.valueOf(this.rawHttpEntity.getContentType());
-    LOG.info("Constructed StereoResponse 4: " + contentType);
     this.isStreaming = this.rawHttpEntity.isStreaming();
-    LOG.info("Constructed StereoResponse 5: " + isStreaming);
     this.isChunked = this.rawHttpEntity.isChunked();
-    LOG.info("Constructed StereoResponse 6: " + isChunked);
     this.isRepeatable = this.rawHttpEntity.isRepeatable();
-    LOG.info("Constructed StereoResponse 7: " + isRepeatable);
     this.content = StereoHttpUtils.getContent(rawHttpResponse).orElse(null);
-    LOG.info("Constructed StereoResponse 8: " + content);
-
-    LOG.info("Response Length: " + getResponseLength());
-    LOG.info("Streaming: " + isStreaming);
-    LOG.info("Chunked: " + isChunked);
-    LOG.info("Repeatable: " + isRepeatable);
-    LOG.info("Content type: " + contentType);
-    LOG.info("Content Encoding: " + encoding);
   }
 
   @Override

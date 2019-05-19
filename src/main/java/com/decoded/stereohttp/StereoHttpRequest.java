@@ -56,10 +56,12 @@ public class StereoHttpRequest {
       }
 
       public void failed(final Exception ex) {
+        LOG.error("StereoHttpRequest Failed: ", ex);
         maybeExceptionMapper.ifPresent(consumer -> consumer.accept(ex));
       }
 
       public void cancelled() {
+        LOG.error("StereoHttpRequest was cancelled");
         maybeCancellationMapper.ifPresent(Runnable::run);
       }
     };
