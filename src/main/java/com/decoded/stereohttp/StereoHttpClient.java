@@ -56,16 +56,10 @@ import java.util.function.Consumer;
  * @see org.apache.http.impl.nio.pool.BasicNIOConnFactory
  */
 public class StereoHttpClient {
-
   private static final Logger LOG = LoggerFactory.getLogger(StereoHttpClient.class);
-
 
   // Create client-side I/O reactor
   private ConnectingIOReactor ioReactor;
-  // Create HTTP protocol processing chain
-  private HttpProcessor httpProcessor;
-  // Create client-side HTTP protocol handler
-  private HttpAsyncRequestExecutor protocolHandler;
 
   private IOEventDispatch ioEventDispatch;
   // Create HTTP connection pool
@@ -96,21 +90,18 @@ public class StereoHttpClient {
     if (!initialized) {
       // OVERRIDE and set configurations here
       // TODO - @barcher decide which request elements are important.
-      this.protocolHandler = new HttpAsyncRequestExecutor();
-
-      this.httpProcessor = HttpProcessorBuilder.create()
-          .add(new RequestContent())
-          .add(new RequestAcceptEncoding())
-          .add(new RequestDefaultHeaders())
-          .add(new RequestTargetHost())
-          .add(new RequestConnControl())
-          .add(new RequestUserAgent(UserAgents.LINUX_JAVA))
-          .add(new RequestExpectContinue(true))
-          .build();
-
       // Create HTTP requester
-      this.requester = new HttpAsyncRequester(httpProcessor);
-      this.ioEventDispatch = new DefaultHttpClientIODispatch<>(protocolHandler, ConnectionConfig.DEFAULT);
+      this.requester = new HttpAsyncRequester(HttpProcessorBuilder.create()
+                                                  .add(new RequestContent())
+                                                  .add(new RequestAcceptEncoding())
+                                                  .add(new RequestDefaultHeaders())
+                                                  .add(new RequestTargetHost())
+                                                  .add(new RequestConnControl())
+                                                  .add(new RequestUserAgent(UserAgents.LINUX_JAVA))
+                                                  .add(new RequestExpectContinue(true))
+                                                  .build());
+      this.ioEventDispatch = new DefaultHttpClientIODispatch<>(new HttpAsyncRequestExecutor(),
+                                                               ConnectionConfig.DEFAULT);
 
       try {
         this.ioReactor = new DefaultConnectingIOReactor();
@@ -133,7 +124,7 @@ public class StereoHttpClient {
    *
    * @return a {@link ClientState}
    */
-  public ClientState getState() {
+  protected ClientState getState() {
     return state;
   }
 
@@ -224,9 +215,9 @@ public class StereoHttpClient {
    * Start the non-blocking client on our executor thread.
    */
   public void start() {
-    setState(ClientState.STARTING);
-
     initialize();
+
+    setState(ClientState.STARTING);
 
     // Run the I/O reactor in a separate thread
     executorService.submit(() -> {
@@ -254,6 +245,16 @@ public class StereoHttpClient {
     return new StereoHttpRequest(pool, requester, httpHost, request).execute();
   }
 
+  /**
+   * Build a Stereo Http Request
+   *
+   * @param scheme          the scheme
+   * @param host            the host
+   * @param port            the port
+   * @param method          the request method
+   * @param uri             the uri
+   * @param requestConsumer a consumer for the constructed request.
+   */
   private void query(Http.Scheme scheme,
                      String host,
                      int port,
@@ -361,6 +362,12 @@ public class StereoHttpClient {
     public BasicHttpRequest request;
     Consumer<StereoHttpRequest> requestConsumer;
 
+    /**
+     * Constructor
+     * @param host host
+     * @param request request
+     * @param requestConsumer consumer to call when request is constructed
+     */
     public PendingRequest(HttpHost host, BasicHttpRequest request, Consumer<StereoHttpRequest> requestConsumer) {
       this.host = host;
       this.request = request;
