@@ -39,8 +39,8 @@ import java.util.concurrent.ExecutorService;
  * StereoHttpClient nioHttpClient;
  *
  * this.nioHttpClient.httpQuery(
- *   "ec2-18-188-69-78.us-east-2.compute.amazonaws.com", 9000,
- *   "GET", "/api/milli/identity/users/get?urn=urn:milli:user:123")
+ *   "xxx.com", 8080,
+ *   RequestMethod.GET, "/api/identity/users/get?urn=urn:user:123")
  *     .map(nioResponse -&gt; nioResponse.getMaybeContent()
  *     .ifPresent(content -&gt; LOG.info("Got the content: " + content)))
  *     .exceptionally(ex -&gt; LOG.error("Caught the exception"))
@@ -242,9 +242,9 @@ public class StereoHttpClient {
     return new StereoHttpRequest(pool, requester, httpHost, request);
   }
 
-  private StereoHttpRequest query(String scheme, String host, int port, String method, String uri) {
+  private StereoHttpRequest query(String scheme, String host, int port, RequestMethod method, String uri) {
     final HttpHost httpHost = new HttpHost(host, port, scheme);
-    final BasicHttpRequest request = new BasicHttpRequest(method, uri);
+    final BasicHttpRequest request = new BasicHttpRequest(method.methodName(), uri);
     if (this.state == ClientState.ONLINE) {
       return nioRequest(httpHost, request).execute();
     } else if (getState() == ClientState.OFFLINE || getState() == ClientState.STARTING) {
@@ -261,12 +261,12 @@ public class StereoHttpClient {
    *
    * @param host   the host, e.g. www.milli.com
    * @param port   the port, e.g. 8080
-   * @param method the method, e.g. GET
+   * @param requestMethod the method, e.g. GET
    * @param uri    the uri, e.g. /login
    * @return the NIO Request
    */
-  public StereoHttpRequest httpQuery(String host, int port, String method, String uri) {
-    return query("http", host, port, method, uri);
+  public StereoHttpRequest httpQuery(String host, int port, RequestMethod requestMethod, String uri) {
+    return query("http", host, port, requestMethod, uri);
   }
 
   /**
@@ -278,7 +278,7 @@ public class StereoHttpClient {
    * @param uri    the uri, e.g. /login
    * @return the NIO Request
    */
-  public StereoHttpRequest httpsQuery(String host, int port, String method, String uri) {
+  public StereoHttpRequest httpsQuery(String host, int port, RequestMethod method, String uri) {
     return query("https", host, port, method, uri);
   }
 
