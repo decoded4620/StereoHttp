@@ -40,57 +40,99 @@ public class StereoHttpRequest {
    * @param httpHost    the {@link HttpHost}
    * @param httpRequest the {@link HttpRequest}
    */
-  public StereoHttpRequest(BasicNIOConnPool pool, HttpAsyncRequester requester, HttpHost httpHost, HttpRequest httpRequest) {
+  public StereoHttpRequest(BasicNIOConnPool pool,
+                           HttpAsyncRequester requester,
+                           HttpHost httpHost,
+                           HttpRequest httpRequest
+  ) {
     this.pool = pool;
     this.requester = requester;
     this.httpHost = httpHost;
     this.httpRequest = httpRequest;
     this.coreContext = HttpCoreContext.create();
-    callback = // Handle HTTP response from a callback
-        new FutureCallback<HttpResponse>() {
-          public void completed(final HttpResponse response) {
-            LOG.info("Response from " + httpHost.toHostString() + " Stream?: " + response.getEntity().isStreaming());
-            maybeCompletionMapper.ifPresent(consumer -> consumer.accept(new StereoResponseImpl(response)));
-          }
+    this.callback = new FutureCallback<HttpResponse>() {
+      public void completed(final HttpResponse response) {
+        maybeCompletionMapper.ifPresent(consumer -> consumer.accept(new StereoResponseImpl(response)));
+      }
 
-          public void failed(final Exception ex) {
-            LOG.error("Response from " + httpHost.toHostString() + " failure: ", ex);
-            maybeExceptionMapper.ifPresent(consumer -> consumer.accept(ex));
-          }
+      public void failed(final Exception ex) {
+        maybeExceptionMapper.ifPresent(consumer -> consumer.accept(ex));
+      }
 
-          public void cancelled() {
-            LOG.error("Response from " + httpHost.toHostString() + " was cancelled");
-            maybeCancellationMapper.ifPresent(Runnable::run);
-          }
-        };
+      public void cancelled() {
+        maybeCancellationMapper.ifPresent(Runnable::run);
+      }
+    };
   }
 
+  /**
+   * Consume the response
+   * @param responseConsumer a consumer.
+   * @return this {@link StereoHttpRequest}
+   */
   public StereoHttpRequest setResponseConsumer(AbstractAsyncResponseConsumer<HttpResponse> responseConsumer) {
     this.responseConsumer = responseConsumer;
     return this;
   }
 
-  public StereoHttpRequest execute() {
+  /**
+   * Package private, only called by the HttpClient internally.
+   *
+   * @return this {@link StereoHttpRequest}
+   * @throws IllegalStateException if the http client is not initialized
+   */
+  StereoHttpRequest execute() {
+    if (requester == null) {
+      throw new IllegalStateException("Request was null, which means the http client was not properly initialized.");
+    }
+
     requester.execute(new BasicAsyncRequestProducer(httpHost, httpRequest), responseConsumer, pool, coreContext,
                       callback);
     return this;
   }
 
+  /**
+   * When the response is available, if the completion mapper is set
+   * it will be called with the response.
+   *
+   * @param mapper a Consumer to accept the response.
+   * @return this {@link StereoHttpRequest}
+   */
   public StereoHttpRequest map(Consumer<StereoResponse> mapper) {
     this.maybeCompletionMapper = Optional.of(mapper);
     return this;
   }
 
+  /**
+   * When the response fails, if the error mapper is set
+   * it will be called with the exception.
+   *
+   * @param exceptionMapper a Consumer to accept the error.
+   * @return this {@link StereoHttpRequest}
+   */
   public StereoHttpRequest exceptionally(Consumer<Exception> exceptionMapper) {
     this.maybeExceptionMapper = Optional.of(exceptionMapper);
     return this;
   }
 
+  /**
+   * When the response is cancelled, if the cancellation mapper is set
+   * it will be called.
+   *
+   * @param cancellationMapper a Consumer to accept the cancellation.
+   * @return this {@link StereoHttpRequest}
+   */
   public StereoHttpRequest cancelling(Runnable cancellationMapper) {
     this.maybeCancellationMapper = Optional.of(cancellationMapper);
     return this;
   }
 
+  /**
+   * After everything (error or not) do this.
+   *
+   * @param afterMapper a Runnable to run after.
+   * @return this {@link StereoHttpRequest}
+   */
   public StereoHttpRequest andThen(Runnable afterMapper) {
     this.maybeAfterMapper = Optional.of(afterMapper);
     return this;
