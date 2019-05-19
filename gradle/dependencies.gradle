@@ -1,0 +1,22 @@
+// https://mvnrepository.com/artifact/org.apache.zookeeper/zookeeper
+
+
+ext {
+    javaVersion = "1.8"
+    mockitoVersion = "2.27.0"
+    apacheHttpClientVersion = "4.5.8"
+    apacheHttpCoreVersion = "4.4.11"
+    appDependencies = [
+            guice         : "com.google.inject:guice:4.0",
+            apacheCommons3: "org.apache.commons:commons-lang3:3.0",
+            apacheHttpClient     : "org.apache.httpcomponents:httpclient:$apacheHttpClientVersion",
+            apacheHttpCoreNio    : "org.apache.httpcomponents:httpcore-nio:$apacheHttpCoreVersion"
+    ]
+
+    testDependencies = [
+            awaitUtil  : "org.awaitility:awaitility:2.0.0",
+            assertJCore: "org.assertj:assertj-core:3.11.1",
+            junit      : "junit:junit:4.12",
+            mockito    : "org.mockito:mockito-core:$mockitoVersion"
+    ]
+}

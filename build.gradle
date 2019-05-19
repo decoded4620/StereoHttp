@@ -1,0 +1,45 @@
+plugins {
+    id 'java'
+    id 'idea'
+    id 'maven-publish'
+}
+
+apply from:'./gradle/dependencies.gradle'
+apply from:'./gradle/publishing.gradle'
+
+group 'com.decoded'
+version '1.0'
+
+sourceCompatibility = 1.8
+def globalConf = rootProject.ext
+repositories {
+    mavenCentral()
+    mavenLocal()
+    maven {
+        name "lightbend-maven-release"
+        url "https://repo.lightbend.com/lightbend/maven-releases"
+    }
+    ivy {
+        name "lightbend-ivy-release"
+        url "https://repo.lightbend.com/lightbend/ivy-releases"
+        layout "ivy"
+    }
+}
+
+dependencies {
+    Map<String, String> dependencies = globalConf.appDependencies
+    Map<String, String> testDependencies = globalConf.testDependencies
+    compile dependencies.guice
+    compile dependencies.apacheHttpClient
+    compile dependencies.apacheHttpCoreNio
+    compile dependencies.apacheCommons3
+
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.26'
+
+
+    testCompile testDependencies.junit
+    testCompile testDependencies.assertJCore
+    testCompile testDependencies.awaitUtil
+    testCompile testDependencies.mockito
+}
