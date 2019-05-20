@@ -20,7 +20,6 @@ public class StereoHttpUtils {
    * @return Optional String
    */
   public static Optional<String> getContent(HttpResponse httpResponse) {
-    LOG.info("getContent!" + httpResponse);
     String content = null;
     try {
       InputStream stream = httpResponse.getEntity().getContent();
@@ -36,8 +35,6 @@ public class StereoHttpUtils {
         reader.close();
         content = builder.toString();
       }
-
-      LOG.info("Got the content!" + content);
     } catch (IOException ex) {
       LOG.error("Could not get content", ex);
     }

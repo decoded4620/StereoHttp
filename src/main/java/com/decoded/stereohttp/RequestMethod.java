@@ -1,7 +1,7 @@
 package com.decoded.stereohttp;
 
 /**
- * Http Request Methods
+ * Http RestRequest Methods
  */
 public enum RequestMethod {
   GET("GET"),

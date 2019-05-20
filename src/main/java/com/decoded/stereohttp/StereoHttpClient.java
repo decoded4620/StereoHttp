@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 
@@ -57,6 +58,7 @@ import java.util.function.Consumer;
  */
 public class StereoHttpClient {
   private static final Logger LOG = LoggerFactory.getLogger(StereoHttpClient.class);
+
 
   // Create client-side I/O reactor
   private ConnectingIOReactor ioReactor;
@@ -151,7 +153,6 @@ public class StereoHttpClient {
         case ONLINE:
           if (getState() == ClientState.STARTING) {
             this.state = state;
-            LOG.info("StereoHttpClient is now Online, with " + pendingRequestsByScheme.size() + " pending requests");
             // create the outgoing requests for all schemes.
             // call the request consumer for each caller to query to satisfy the created request.
             pendingRequestsByScheme.forEach((scheme, requests) -> requests.forEach(
@@ -200,14 +201,13 @@ public class StereoHttpClient {
   public void terminate() {
     setState(ClientState.SHUTTING_DOWN);
     try {
-      LOG.info("Shutting down I/O reactor");
+      LOG.warn("Shutting down I/O reactor");
       ioReactor.shutdown();
     } catch (IOException ex) {
       LOG.warn("IO Reactor may have already shut down");
     }
 
     initialized = false;
-    LOG.info("StereoHttpClient is dead");
     setState(ClientState.TERMINATED);
   }
 
@@ -246,7 +246,7 @@ public class StereoHttpClient {
   }
 
   /**
-   * Build a Stereo Http Request
+   * Build a Stereo Http RestRequest
    *
    * @param scheme          the scheme
    * @param host            the host

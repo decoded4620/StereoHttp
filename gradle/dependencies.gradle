@@ -6,11 +6,16 @@ ext {
     mockitoVersion = "2.27.0"
     apacheHttpClientVersion = "4.5.8"
     apacheHttpCoreVersion = "4.4.11"
+    guiceVersion = "4.0"
+    jacksonVersion = "2.9.7"
     appDependencies = [
-            guice         : "com.google.inject:guice:4.0",
-            apacheCommons3: "org.apache.commons:commons-lang3:3.0",
+            guice                : "com.google.inject:guice:$guiceVersion",
+            apacheCommons3       : "org.apache.commons:commons-lang3:3.0",
             apacheHttpClient     : "org.apache.httpcomponents:httpclient:$apacheHttpClientVersion",
-            apacheHttpCoreNio    : "org.apache.httpcomponents:httpcore-nio:$apacheHttpCoreVersion"
+            apacheHttpCoreNio    : "org.apache.httpcomponents:httpcore-nio:$apacheHttpCoreVersion",
+            jacksonDataBind      : "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion",
+            jacksonDataFormatYAML: "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion",
+            jacksonDataFormatXML : "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion"
     ]
 
     testDependencies = [

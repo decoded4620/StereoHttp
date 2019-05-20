@@ -33,6 +33,9 @@ dependencies {
     compile dependencies.apacheHttpClient
     compile dependencies.apacheHttpCoreNio
     compile dependencies.apacheCommons3
+    compile dependencies.jacksonDataBind
+    compile dependencies.jacksonDataFormatYAML
+    compile dependencies.jacksonDataFormatXML
 
     // https://mvnrepository.com/artifact/org.slf4j/slf4j-api
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.26'

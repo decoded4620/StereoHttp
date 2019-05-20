@@ -17,6 +17,9 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 
+/**
+ * The internal class used by Stereo to make http requests on its non-blocking Http Client.
+ */
 public class StereoHttpRequest {
   private static final Logger LOG = LoggerFactory.getLogger(StereoHttpRequest.class);
   private final HttpCoreContext coreContext;
@@ -40,7 +43,7 @@ public class StereoHttpRequest {
    * @param httpHost    the {@link HttpHost}
    * @param httpRequest the {@link HttpRequest}
    */
-  public StereoHttpRequest(BasicNIOConnPool pool,
+  StereoHttpRequest(BasicNIOConnPool pool,
                            HttpAsyncRequester requester,
                            HttpHost httpHost,
                            HttpRequest httpRequest
@@ -85,7 +88,7 @@ public class StereoHttpRequest {
    */
   StereoHttpRequest execute() {
     if (requester == null) {
-      throw new IllegalStateException("Request was null, which means the http client was not properly initialized.");
+      throw new IllegalStateException("RestRequest was null, which means the http client was not properly initialized.");
     }
 
     requester.execute(new BasicAsyncRequestProducer(httpHost, httpRequest), responseConsumer, pool, coreContext,
