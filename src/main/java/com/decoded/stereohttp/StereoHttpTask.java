@@ -44,9 +44,10 @@ public class StereoHttpTask<T> {
    * Execute the restRequest.
    *
    * @param restRequest the restRequest
-   * @return CompletableFuture
+   * @param <ID_T> the identifier type for the request. Used as a pass through here.
+   * @return CompletableFuture of T
    */
-  public CompletableFuture<T> execute(RestRequest<T> restRequest) {
+  public <ID_T> CompletableFuture<T> execute(RestRequest<T, ID_T> restRequest) {
     return CompletableFuture.supplyAsync(() -> {
       long start = System.currentTimeMillis();
       // used for effectively final scope rules
