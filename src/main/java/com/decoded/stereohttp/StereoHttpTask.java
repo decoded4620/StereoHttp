@@ -10,6 +10,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Supplier;
 
 
 /**
@@ -57,10 +58,12 @@ public class StereoHttpTask<T> {
                                  restRequest.getRequestMethod(),
                                  restRequest.getRequestUri(), (stereoRequest) -> {
             stereoRequest.map(response -> {
+              debugIf(() -> "Stereo Response: " + response.getContent());
               ObjectMapper mapper = new ObjectMapper();
               try {
                 valueHolder.value = mapper.readValue(response.getContent(), tClass);
                 restRequest.getResultConsumer().accept(valueHolder.value);
+                debugIf(() -> "Stereo read content to type: " + valueHolder.value.getClass().getName());
               } catch (JsonParseException ex) {
                 LOG.error("Parse Failure: ", ex);
               } catch (IOException ex) {
@@ -74,7 +77,7 @@ public class StereoHttpTask<T> {
               LOG.warn("Cancelled the restRequest");
               valueHolder.countDown();
             }).andThen(() -> {
-
+               debugIf(() -> "Completion mapper");
             });
           });
       try {
@@ -87,6 +90,8 @@ public class StereoHttpTask<T> {
         if(delta > maxLatency.get()) {
           maxLatency.set(delta);
         }
+
+        debugIf(() -> "Stereo Latency: (min " + minLatency.get() + ", max " + maxLatency.get() + ")");
       } catch (InterruptedException ex) {
         throw new RuntimeException("Failed", ex);
       }
@@ -94,7 +99,12 @@ public class StereoHttpTask<T> {
       return valueHolder.value;
     });
   }
-
+  // helper for efficient debug logging
+  private static void debugIf(Supplier<String> message) {
+    if(LOG.isErrorEnabled()) {
+      LOG.debug(message.get());
+    }
+  }
   /**
    * This contains a value reference that can be set in lambda scope.
    * @param <T>

@@ -13,8 +13,9 @@ import org.apache.http.protocol.HttpCoreContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 
 /**
@@ -29,10 +30,11 @@ public class StereoHttpRequest {
   private final HttpAsyncRequester requester;
 
   private FutureCallback<HttpResponse> callback;
-  private Optional<Consumer<StereoResponse>> maybeCompletionMapper = Optional.empty();
-  private Optional<Consumer<Exception>> maybeExceptionMapper = Optional.empty();
-  private Optional<Runnable> maybeCancellationMapper = Optional.empty();
-  private Optional<Runnable> maybeAfterMapper = Optional.empty();
+
+  private List<Consumer<StereoResponse>> completionMappers = new ArrayList<>();
+  private List<Consumer<Exception>> errorMappers = new ArrayList<>();
+  private List<Runnable> cancellationMappers = new ArrayList<>();
+  private List<Runnable> afterMappers = new ArrayList<>();
   private AbstractAsyncResponseConsumer<HttpResponse> responseConsumer = new BasicAsyncResponseConsumer();
 
   /**
@@ -55,19 +57,26 @@ public class StereoHttpRequest {
     this.coreContext = HttpCoreContext.create();
     this.callback = new FutureCallback<HttpResponse>() {
       public void completed(final HttpResponse response) {
-        maybeCompletionMapper.ifPresent(consumer -> consumer.accept(new StereoResponseImpl(response)));
+        completionMappers.forEach(consumer -> consumer.accept(new StereoResponseImpl(response)));
       }
 
       public void failed(final Exception ex) {
         LOG.error("StereoHttpRequest Failed: ", ex);
-        maybeExceptionMapper.ifPresent(consumer -> consumer.accept(ex));
+        errorMappers.forEach(consumer -> consumer.accept(ex));
       }
 
       public void cancelled() {
         LOG.error("StereoHttpRequest was cancelled");
-        maybeCancellationMapper.ifPresent(Runnable::run);
+        cancellationMappers.forEach(Runnable::run);
       }
     };
+  }
+
+  // helper for efficient debug logging
+  private static void debugIf(Supplier<String> message) {
+    if(LOG.isErrorEnabled()) {
+      LOG.debug(message.get());
+    }
   }
 
   /**
@@ -91,6 +100,7 @@ public class StereoHttpRequest {
       throw new IllegalStateException("RestRequest was null, which means the http client was not properly initialized.");
     }
 
+    debugIf(() -> "execute http request to " + httpHost + ", " + httpRequest.toString());
     requester.execute(new BasicAsyncRequestProducer(httpHost, httpRequest), responseConsumer, pool, coreContext,
                       callback);
     return this;
@@ -104,7 +114,9 @@ public class StereoHttpRequest {
    * @return this {@link StereoHttpRequest}
    */
   public StereoHttpRequest map(Consumer<StereoResponse> mapper) {
-    this.maybeCompletionMapper = Optional.of(mapper);
+    if(!completionMappers.contains(mapper)) {
+      Optional.ofNullable(mapper).ifPresent(completionMappers::add);
+    }
     return this;
   }
 
@@ -116,7 +128,7 @@ public class StereoHttpRequest {
    * @return this {@link StereoHttpRequest}
    */
   public StereoHttpRequest exceptionally(Consumer<Exception> exceptionMapper) {
-    this.maybeExceptionMapper = Optional.of(exceptionMapper);
+    Optional.ofNullable(exceptionMapper).ifPresent(errorMappers::add);
     return this;
   }
 
@@ -128,7 +140,7 @@ public class StereoHttpRequest {
    * @return this {@link StereoHttpRequest}
    */
   public StereoHttpRequest cancelling(Runnable cancellationMapper) {
-    this.maybeCancellationMapper = Optional.of(cancellationMapper);
+    Optional.ofNullable(cancellationMapper).ifPresent(cancellationMappers::add);
     return this;
   }
 
@@ -139,7 +151,7 @@ public class StereoHttpRequest {
    * @return this {@link StereoHttpRequest}
    */
   public StereoHttpRequest andThen(Runnable afterMapper) {
-    this.maybeAfterMapper = Optional.of(afterMapper);
+    Optional.ofNullable(afterMapper).ifPresent(afterMappers::add);
     return this;
   }
 }

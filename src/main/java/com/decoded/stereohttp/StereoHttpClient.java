@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 
 /**
@@ -88,8 +89,14 @@ public class StereoHttpClient {
     this.maxOutboundConnectionsPerRoute = maxOutboundConnectionsPerRoute;
   }
 
+  private static void debugIf(Supplier<String> message) {
+    if(LOG.isDebugEnabled()) {
+      LOG.debug(message.get());
+    }
+  }
   protected void initialize() {
     if (!initialized) {
+      debugIf(() -> "Initializing StereoHttpClient");
       // OVERRIDE and set configurations here
       // TODO - @barcher decide which request elements are important.
       // Create HTTP requester
@@ -102,6 +109,7 @@ public class StereoHttpClient {
                                                   .add(new RequestUserAgent(UserAgents.LINUX_JAVA))
                                                   .add(new RequestExpectContinue(true))
                                                   .build());
+
       this.ioEventDispatch = new DefaultHttpClientIODispatch<>(new HttpAsyncRequestExecutor(),
                                                                ConnectionConfig.DEFAULT);
 
@@ -136,6 +144,7 @@ public class StereoHttpClient {
    * @param state the {@link ClientState}
    */
   protected void setState(ClientState state) {
+    debugIf(() -> "Attempting to Set StereoHttpClient State" + state);
     if (this.state != state) {
       switch (state) {
         case OFFLINE:
@@ -192,6 +201,8 @@ public class StereoHttpClient {
         default:
           break;
       }
+
+      debugIf(() -> "State was changed to " + state);
     }
   }
 
@@ -199,6 +210,7 @@ public class StereoHttpClient {
    * Terminate the client.
    */
   public void terminate() {
+    debugIf(() -> "Terminate Stereo Http Client");
     setState(ClientState.SHUTTING_DOWN);
     try {
       LOG.warn("Shutting down I/O reactor");
@@ -215,6 +227,7 @@ public class StereoHttpClient {
    * Start the non-blocking client on our executor thread.
    */
   public void start() {
+    debugIf(() -> "Starting StereoHttpClient");
     initialize();
 
     setState(ClientState.STARTING);
@@ -222,6 +235,7 @@ public class StereoHttpClient {
     // Run the I/O reactor in a separate thread
     executorService.submit(() -> {
       setState(ClientState.ONLINE);
+      debugIf(() -> "Stereo Client is online");
       try {
         // Ready to go!
         ioReactor.execute(ioEventDispatch);
@@ -262,7 +276,7 @@ public class StereoHttpClient {
                      String uri,
                      Consumer<StereoHttpRequest> requestConsumer
   ) {
-
+    debugIf(() -> "Query: " + method.name() + " - " + scheme + "://" + host + "/" + uri);
     final HttpHost httpHost = new HttpHost(host, port, scheme.getProtocol());
     final BasicHttpRequest request = new BasicHttpRequest(method.methodName(), uri);
     if (this.state == ClientState.ONLINE) {
@@ -369,6 +383,7 @@ public class StereoHttpClient {
      * @param requestConsumer consumer to call when request is constructed
      */
     public PendingRequest(HttpHost host, BasicHttpRequest request, Consumer<StereoHttpRequest> requestConsumer) {
+      debugIf(() -> "Pending Request to " + host.toHostString() + ", " + request.toString());
       this.host = host;
       this.request = request;
       this.requestConsumer = requestConsumer;
