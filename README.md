@@ -18,7 +18,6 @@ e.g.
 
  // make requests with the same client (over and over)
  RestRequest.Builder<User> requestBuilder = new RestRequest.Builder<>(User.class)
-        .setResultConsumer(tResult -> System.out.println("Got User Result Back: " + tResult.toString()))
         .setRequestMethod(RequestMethod.GET)
         .setHost("mywebsite-api.com")
         .setPort(80)

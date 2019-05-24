@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -87,6 +86,14 @@ public class StereoHttpClient {
 
   public void setMaxOutboundConnectionsPerRoute(int maxOutboundConnectionsPerRoute) {
     this.maxOutboundConnectionsPerRoute = maxOutboundConnectionsPerRoute;
+  }
+
+  /**
+   * Returns the executor service that delves out the threads for http requests.
+   * @return the executor service.
+   */
+  public ExecutorService getExecutorService() {
+    return executorService;
   }
 
   private static void debugIf(Supplier<String> message) {
@@ -223,6 +230,9 @@ public class StereoHttpClient {
     setState(ClientState.TERMINATED);
   }
 
+  public boolean canStart() {
+    return state == ClientState.OFFLINE || state == ClientState.TERMINATED;
+  }
   /**
    * Start the non-blocking client on our executor thread.
    */
@@ -255,7 +265,7 @@ public class StereoHttpClient {
    * @param httpHost the host.
    * @param request  the request.
    */
-  private StereoHttpRequest nioRequest(HttpHost httpHost, BasicHttpRequest request) {
+  /* package private */ StereoHttpRequest nioRequest(HttpHost httpHost, BasicHttpRequest request) {
     return new StereoHttpRequest(pool, requester, httpHost, request).execute();
   }
 

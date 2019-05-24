@@ -1,8 +1,5 @@
 package com.decoded.stereohttp;
 
-import java.util.function.Consumer;
-
-
 /**
  * RestRequest That can be passed to {@link StereoHttpTask} of type T
  *
@@ -13,7 +10,6 @@ public class RestRequest<T, ID_T> {
   private final int port;
   private final RequestMethod requestMethod;
   private final String requestUri;
-  private final Consumer<T> resultConsumer;
   private ID_T urn;
   /**
    * Constructor
@@ -25,16 +21,7 @@ public class RestRequest<T, ID_T> {
     host = builder.host;
     port = builder.port;
     requestMethod = builder.requestMethod;
-    resultConsumer = builder.resultConsumer;
     requestUri = builder.requestUri;
-  }
-
-  /**
-   * Consume the result upon receipt.
-   * @return a Consumer of T
-   */
-  public Consumer<T> getResultConsumer() {
-    return resultConsumer;
   }
 
   /**
@@ -86,7 +73,6 @@ public class RestRequest<T, ID_T> {
     private int port;
     private String requestUri;
     private RequestMethod requestMethod;
-    private Consumer<T> resultConsumer;
     private ID_T urn;
     private Class<T> tClass;
     private Class<ID_T> idClass;
@@ -110,12 +96,6 @@ public class RestRequest<T, ID_T> {
       this.port = port;
       return this;
     }
-
-    public Builder<T, ID_T> setResultConsumer(Consumer<T> resultConsumer) {
-      this.resultConsumer = resultConsumer;
-      return this;
-    }
-
     public Builder<T, ID_T> setRequestMethod(RequestMethod requestMethod) {
       this.requestMethod = requestMethod;
       return this;

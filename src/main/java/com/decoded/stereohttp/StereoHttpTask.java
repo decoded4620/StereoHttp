@@ -1,14 +1,11 @@
 package com.decoded.stereohttp;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Supplier;
 
@@ -41,79 +38,108 @@ public class StereoHttpTask<T> {
     this.timeout = timeout;
   }
 
+  // helper for efficient debug logging
+  private static void debugIf(Supplier<String> message) {
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("{" + Thread.currentThread().getName() + "}:" + message.get());
+    }
+  }
+
   /**
    * Execute the restRequest.
    *
    * @param restRequest the restRequest
-   * @param <ID_T> the identifier type for the request. Used as a pass through here.
+   * @param <ID_T>      the identifier type for the request. Used as a pass through here.
+   *
    * @return CompletableFuture of T
    */
   public <ID_T> CompletableFuture<T> execute(RestRequest<T, ID_T> restRequest) {
-    return CompletableFuture.supplyAsync(() -> {
-      long start = System.currentTimeMillis();
-      // used for effectively final scope rules
-      ValueHolder<T> valueHolder = new ValueHolder<>();
-      stereoHttpClient.httpQuery(restRequest.getHost(),
-                                 restRequest.getPort(),
-                                 restRequest.getRequestMethod(),
-                                 restRequest.getRequestUri(), (stereoRequest) -> {
-            stereoRequest.map(response -> {
-              debugIf(() -> "Stereo Response: " + response.getContent());
-              ObjectMapper mapper = new ObjectMapper();
-              try {
-                valueHolder.value = mapper.readValue(response.getContent(), tClass);
-                restRequest.getResultConsumer().accept(valueHolder.value);
-                debugIf(() -> "Stereo read content to type: " + valueHolder.value.getClass().getName());
-              } catch (JsonParseException ex) {
-                LOG.error("Parse Failure: ", ex);
-              } catch (IOException ex) {
-                LOG.error("IOException", ex);
-              }
-              valueHolder.countDown();
-            }).exceptionally(ex -> {
-              LOG.error("Could not load data", ex);
-              valueHolder.countDown();
-            }).cancelling(() -> {
-              LOG.warn("Cancelled the restRequest");
-              valueHolder.countDown();
-            }).andThen(() -> {
-               debugIf(() -> "Completion mapper");
-            });
+    debugIf(() -> "execute(): " + timeout + " ms");
+    return CompletableFuture.supplyAsync(() -> performQuery(restRequest), stereoHttpClient.getExecutorService());
+  }
+
+  private <ID_T> T performQuery(RestRequest<T, ID_T> restRequest) {
+
+    debugIf(() -> "Perform Query: " + restRequest.getRequestUri());
+    // used for effectively final scope rules
+
+    ValueHolder<T> valueHolder = new ValueHolder<>();
+    stereoHttpClient.httpQuery(restRequest.getHost(), restRequest.getPort(), restRequest.getRequestMethod(),
+                               restRequest.getRequestUri(), (stereoRequest) -> {
+          final long start = System.currentTimeMillis();
+
+          Runnable updateDelta = () -> {
+            long delta = System.currentTimeMillis() - start;
+            if (delta < minLatency.get()) {
+              LOG.warn("Min latency improved!! " + delta);
+              minLatency.set(delta);
+            }
+
+            if (delta > maxLatency.get()) {
+              LOG.warn("Max latency degradation!!: " + delta);
+              maxLatency.set(delta);
+            }
+            valueHolder.countDown();
+          };
+
+          stereoRequest.map(response -> {
+            debugIf(() -> "Stereo Response: " + response.getContent());
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+              valueHolder.value = mapper.readValue(response.getContent(), tClass);
+              debugIf(() -> "Stereo read content to type: " + valueHolder.value.getClass().getName());
+              updateDelta.run();
+            } catch (Exception ex) {
+              valueHolder.exception = ex;
+              updateDelta.run();
+            }
+          }).exceptionally(ex -> {
+            valueHolder.exception = ex;
+            updateDelta.run();
+          }).cancelling(() -> {
+            valueHolder.wasCancelled = true;
+            updateDelta.run();
+            LOG.warn("Cancelled the restRequest");
+          }).andThen(() -> {
+            debugIf(() -> "Completion mapper");
           });
-      try {
-        valueHolder.await(timeout, TimeUnit.MILLISECONDS);
-        long delta = System.currentTimeMillis() - start;
-        if(delta < minLatency.get()) {
-          minLatency.set(delta);
-        }
+        });
+    debugIf(() -> "Waiting on value to appear: " + timeout + " ms");
 
-        if(delta > maxLatency.get()) {
-          maxLatency.set(delta);
-        }
-
-        debugIf(() -> "Stereo Latency: (min " + minLatency.get() + ", max " + maxLatency.get() + ")");
-      } catch (InterruptedException ex) {
-        throw new RuntimeException("Failed", ex);
-      }
-      // user should have data here.
-      return valueHolder.value;
-    });
-  }
-  // helper for efficient debug logging
-  private static void debugIf(Supplier<String> message) {
-    if(LOG.isErrorEnabled()) {
-      LOG.debug(message.get());
+    try {
+      valueHolder.await();
+    } catch (InterruptedException ex) {
+      valueHolder.exception = ex;
     }
+
+    if (valueHolder.exception != null) {
+      LOG.error("Failed to acquire value: ", valueHolder.exception);
+      throw new RuntimeException(valueHolder.exception);
+    }
+
+    debugIf(() -> "Stereo Latency: (min " + minLatency.get() + ", max " + maxLatency.get() + ")");
+    // user should have data here.
+    return valueHolder.value;
   }
+
   /**
    * This contains a value reference that can be set in lambda scope.
+   *
    * @param <T>
    */
   private static final class ValueHolder<T> extends CountDownLatch {
     T value;
+    Throwable exception;
+    boolean wasCancelled;
 
     public ValueHolder() {
       super(1);
+    }
+
+    @Override
+    public void countDown() {
+      debugIf(() -> "Count Down from: " + this.getCount());
+      super.countDown();
     }
   }
 }
