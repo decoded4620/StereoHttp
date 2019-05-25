@@ -100,7 +100,7 @@ public class StereoHttpRequest {
       throw new IllegalStateException("RestRequest was null, which means the http client was not properly initialized.");
     }
 
-    debugIf(() -> "execute http request to " + httpHost + ", " + httpRequest.toString());
+    debugIf(() -> "execute http request to " + httpHost.getHostName() + ", " + httpRequest.toString());
     requester.execute(new BasicAsyncRequestProducer(httpHost, httpRequest), responseConsumer, pool, coreContext,
                       callback);
     return this;

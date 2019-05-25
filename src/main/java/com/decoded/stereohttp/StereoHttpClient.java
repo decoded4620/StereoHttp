@@ -286,7 +286,7 @@ public class StereoHttpClient {
                      String uri,
                      Consumer<StereoHttpRequest> requestConsumer
   ) {
-    debugIf(() -> "Query: " + method.name() + " - " + scheme + "://" + host + "/" + uri);
+    debugIf(() -> "Query: " + method.name() + " - " + scheme + "://" + host + uri);
     final HttpHost httpHost = new HttpHost(host, port, scheme.getProtocol());
     final BasicHttpRequest request = new BasicHttpRequest(method.methodName(), uri);
     if (this.state == ClientState.ONLINE) {
