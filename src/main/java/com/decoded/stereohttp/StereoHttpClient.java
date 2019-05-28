@@ -1,6 +1,7 @@
 package com.decoded.stereohttp;
 
 import com.google.inject.Inject;
+import org.apache.http.ConnectionClosedException;
 import org.apache.http.HttpHost;
 import org.apache.http.client.protocol.RequestAcceptEncoding;
 import org.apache.http.client.protocol.RequestDefaultHeaders;
@@ -249,7 +250,10 @@ public class StereoHttpClient {
       try {
         // Ready to go!
         ioReactor.execute(ioEventDispatch);
-      } catch (final InterruptedIOException ex) {
+      } catch (ConnectionClosedException ex)  {
+        LOG.error("IO Reactor execution was disconnected", ex);
+      }
+      catch (final InterruptedIOException ex) {
         LOG.error("IO Reactor execution was interrupted", ex);
         setState(ClientState.TERMINATED);
       } catch (final IOException ex) {
