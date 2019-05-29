@@ -1,6 +1,9 @@
 # StereoHttp
 Non Blocking Http Client implementation based on Apache NIO
 
+Be sure to check out the docs
+https://decoded4620.github.io/StereoHttp/docs/javadoc/
+
 
 # Usage
 The easest way is to create a `RestRequest` using a `RestRequest.Builder`, and then create a new `StereoHttpTask`, passing the request, and `StereoHttpClient` instance in for execution. This assumes that the url you hit returns JSON serialized data that can be Deserialized into the provided type, e.g. User in the example below.
