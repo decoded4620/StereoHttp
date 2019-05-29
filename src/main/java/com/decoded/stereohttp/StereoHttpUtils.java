@@ -10,7 +10,7 @@ import java.io.InputStreamReader;
 import java.util.Optional;
 
 
-public class StereoHttpUtils {
+class StereoHttpUtils {
   private static final Logger LOG = LoggerFactory.getLogger(StereoHttpUtils.class);
 
   /**
@@ -19,7 +19,7 @@ public class StereoHttpUtils {
    * @param httpResponse an HttpResponse.
    * @return Optional String
    */
-  public static Optional<String> getContent(HttpResponse httpResponse) {
+  static Optional<String> getContent(HttpResponse httpResponse) {
     String content = null;
     try {
       InputStream stream = httpResponse.getEntity().getContent();

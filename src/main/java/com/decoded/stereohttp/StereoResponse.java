@@ -1,5 +1,6 @@
 package com.decoded.stereohttp;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 
 import java.util.Optional;
@@ -63,6 +64,13 @@ public interface StereoResponse {
    * @return a long
    */
   long getContentLength();
+
+  /**
+   * The raw {@link HttpEntity}
+   * @return The raw Http entity.
+   */
+  @Deprecated
+  HttpEntity getRawHttpEntity();
 
   /**
    * The Raw {@link HttpResponse} from apache

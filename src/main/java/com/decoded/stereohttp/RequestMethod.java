@@ -13,6 +13,7 @@ public enum RequestMethod {
   CREATE("CONNECT");
 
   private final String requestType;
+
   RequestMethod(String type) {
     this.requestType = type;
   }

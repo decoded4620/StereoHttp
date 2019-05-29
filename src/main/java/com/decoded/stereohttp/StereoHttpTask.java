@@ -11,9 +11,15 @@ import java.util.function.Supplier;
 
 
 /**
- * Http Task of type T
+ * Http Task, which returns a type of type T
+ * The Stereo Task attempts to convert the raw result (which is expected to be in JSON format) into the type T,
+ * along with any custom encoder or decoders required.
  *
- * @param <T> the type to fetch with this task.
+ * <h2>Usage</h2>
+ * <pre>
+ *   new StereoHttpTask&lt;MyRecordType&gt;(MyRecordType.class, myStereoClient, 2000).execute(RestRequestBuilders....build());
+ * </pre>
+ * @param <T> the type to create using the underlying Http Response data  ({@link StereoResponse}) from a {@link StereoHttpRequest}.
  */
 public class StereoHttpTask<T> {
   private static final Logger LOG = LoggerFactory.getLogger(StereoHttpTask.class);
@@ -58,6 +64,12 @@ public class StereoHttpTask<T> {
     return CompletableFuture.supplyAsync(() -> performQuery(restRequest), stereoHttpClient.getExecutorService());
   }
 
+  /**
+   * internal method to run the request.
+   * @param restRequest a {@link RestRequest}
+   * @param <ID_T> the type of identifier used to locate the value for the query.
+   * @return the type specified for this task.
+   */
   private <ID_T> T performQuery(RestRequest<T, ID_T> restRequest) {
 
     debugIf(() -> "Perform Query: " + restRequest.getRequestUri());

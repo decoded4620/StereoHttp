@@ -4,11 +4,14 @@ plugins {
     id 'maven-publish'
 }
 
+
+apply from:'./gradle/javadoc.gradle'
 apply from:'./gradle/dependencies.gradle'
 apply from:'./gradle/publishing.gradle'
 
 group 'com.decoded'
 version '1.0'
+
 
 sourceCompatibility = 1.8
 def globalConf = rootProject.ext
@@ -25,7 +28,6 @@ repositories {
         layout "ivy"
     }
 }
-
 dependencies {
     Map<String, String> dependencies = globalConf.appDependencies
     Map<String, String> testDependencies = globalConf.testDependencies

@@ -1,5 +1,8 @@
 package com.decoded.stereohttp;
 
+/**
+ * General Http Values for Stereo
+ */
 public class Http {
   /**
    * Schemes for calling remote hosts with default ports

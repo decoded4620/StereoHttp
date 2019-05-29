@@ -33,18 +33,15 @@ import java.util.function.Supplier;
 /**
  * Minimal asynchronous HTTP/1.1 client.
  * <p>
- * Please note that this example represents a minimal HTTP client implementation.
- * // TODO - @barcher
- * It does not support HTTPS as is.
- * Need to provide BasicNIOConnPool with a connection factory
- * that supports SSL.
+ * Please note that this example represents a minimal HTTP client implementation. // TODO - @barcher It does not support
+ * HTTPS as is. Need to provide BasicNIOConnPool with a connection factory that supports SSL.
  *
  * <h1>Usage</h1>
  * <pre>
  * StereoHttpClient stereoHttpClient;
  *
  * this.stereoHttpClient.httpQuery("ec2-18-188-69-78.us-east-2.compute.amazonaws.com", 9000, RequestMethod.GET,
- * "/api/identity/users/get?urn=urn:yourdomain:user:123", request -&lt; {
+ * "/api/identity/users/get?urn=urn:yourdomain:user:1 23", request -&lt; {
  *         request.map(stereoResponse -&lt; stereoResponse.getMaybeContent()
  *             .ifPresent(content -&lt; LOG.info("Stereo Response Content: " + content)))
  *         .exceptionally(ex -&lt; LOG.error("Caught the exception"))
@@ -53,8 +50,7 @@ import java.util.function.Supplier;
  *     });
  * </pre>
  *
- * @see BasicNIOConnPool#BasicNIOConnPool(ConnectingIOReactor,
- * org.apache.http.nio.pool.NIOConnFactory, int)
+ * @see BasicNIOConnPool#BasicNIOConnPool(ConnectingIOReactor, org.apache.http.nio.pool.NIOConnFactory, int)
  * @see org.apache.http.impl.nio.pool.BasicNIOConnFactory
  */
 public class StereoHttpClient {
@@ -81,27 +77,41 @@ public class StereoHttpClient {
     this.executorService = executorService;
   }
 
+  private static void debugIf(Supplier<String> message) {
+    if (LOG.isDebugEnabled()) {
+      LOG.debug(message.get());
+    }
+  }
+
+  /**
+   * Set the NIO client outbound connection maximum
+   * @param maxOutboundConnections the max connections for simultaneous outbound connections
+   */
   public void setMaxOutboundConnections(int maxOutboundConnections) {
     this.maxOutboundConnections = maxOutboundConnections;
   }
 
+  /**
+   * The max output connections per route
+   * @param maxOutboundConnectionsPerRoute the max connections per route.
+   */
   public void setMaxOutboundConnectionsPerRoute(int maxOutboundConnectionsPerRoute) {
     this.maxOutboundConnectionsPerRoute = maxOutboundConnectionsPerRoute;
   }
 
   /**
    * Returns the executor service that delves out the threads for http requests.
+   *
    * @return the executor service.
    */
   public ExecutorService getExecutorService() {
     return executorService;
   }
 
-  private static void debugIf(Supplier<String> message) {
-    if(LOG.isDebugEnabled()) {
-      LOG.debug(message.get());
-    }
-  }
+  /**
+   * Provides a hook for subclasses to insert logic before (or after) the Requester, reactor, and connection factory are
+   * constructed.
+   */
   protected void initialize() {
     if (!initialized) {
       debugIf(() -> "Initializing StereoHttpClient");
@@ -120,13 +130,13 @@ public class StereoHttpClient {
 
       this.ioEventDispatch = new DefaultHttpClientIODispatch<>(new HttpAsyncRequestExecutor(),
                                                                ConnectionConfig.DEFAULT);
-
       try {
         this.ioReactor = new DefaultConnectingIOReactor();
       } catch (IOReactorException ex) {
         throw new RuntimeException("Cannot connect to the reactor", ex);
       }
 
+      // TODO - Support SSL in Stereo HTTP https://github.com/decoded4620/StereoHttp/issues/1
       this.pool = new BasicNIOConnPool(ioReactor, ConnectionConfig.DEFAULT);
       // Limit total number of connections to just two
       this.pool.setDefaultMaxPerRoute(maxOutboundConnectionsPerRoute);
@@ -141,13 +151,26 @@ public class StereoHttpClient {
    * Returns the current state of the client.
    *
    * @return a {@link ClientState}
+   *
+   * @see ClientState
    */
   protected ClientState getState() {
     return state;
   }
 
   /**
-   * Set the state of the client. Restricted to a Deterministic Finite State Machine
+   * Set the state of the client. Restricted to a Deterministic Finite State Machine.
+   * <p>
+   * Rules: The State Machine can pass from nodes on the left to nodes on the right. The state begins as "Offline" and can
+   * move through the state machine in the following way:
+   * <pre>
+   * OFFLINE -&gt; STARTING
+   * STARTING -&gt; ONLINE
+   * STARING || ONLINE -&gt; SHUTTING_DOWN
+   * ONLINE || STARTING -&gt; ERROR
+   * SHUTTING_DOWN -&gt; TERMINATED
+   * ERROR || TERMINATED -&gt; OFFLINE
+   * </pre>
    *
    * @param state the {@link ClientState}
    */
@@ -156,16 +179,22 @@ public class StereoHttpClient {
     if (this.state != state) {
       switch (state) {
         case OFFLINE:
-          if (getState() == ClientState.TERMINATED) {
+          if (getState() == ClientState.TERMINATED || getState() == ClientState.ERROR) {
             this.state = state;
           } else {
             throw new IllegalArgumentException(
-                "Client current state expected to be " + ClientState.TERMINATED + " but was: " + getState());
+                "Client current state expected to be " + ClientState.TERMINATED + " or " + ClientState.ERROR + " but was: " + getState());
           }
           break;
         case ERROR:
-          LOG.error("State was set to ERROR", new RuntimeException("Error"));
-          this.state = state;
+          if (getState() == ClientState.STARTING || getState() == ClientState.ONLINE) {
+            LOG.error("State was set to ERROR", new RuntimeException("Error"));
+            this.state = state;
+          } else {
+            throw new IllegalArgumentException(
+                "Client current state expected to be " + ClientState.STARTING + " or " + ClientState.ONLINE + " but " +
+                    "was: " + getState());
+          }
           break;
         case ONLINE:
           if (getState() == ClientState.STARTING) {
@@ -175,7 +204,6 @@ public class StereoHttpClient {
             pendingRequestsByScheme.forEach((scheme, requests) -> requests.forEach(
                 request -> request.requestConsumer.accept(nioRequest(request.host, request.request))));
             pendingRequestsByScheme.clear();
-
           } else {
             throw new IllegalArgumentException(
                 "Client current state expected to be " + ClientState.STARTING + " but was: " + getState());
@@ -193,17 +221,22 @@ public class StereoHttpClient {
             throw new IllegalArgumentException(
                 "Client current state expected to be " + ClientState.OFFLINE + " but was: " + getState());
           }
+
           break;
         case SHUTTING_DOWN:
           if (getState() == ClientState.STARTING || getState() == ClientState.ONLINE) {
             this.state = state;
+          } else {
+            throw new IllegalArgumentException(
+                "Client current state expected to be " + ClientState.STARTING + " or " + ClientState.ONLINE + " but was: " + getState());
           }
+
         case TERMINATED:
-          if (getState() == ClientState.ONLINE) {
+          if (getState() == ClientState.SHUTTING_DOWN) {
             this.state = state;
           } else {
             throw new IllegalArgumentException(
-                "Client current state expected to be " + ClientState.ONLINE + " but was: " + getState());
+                "Client current state expected to be " + ClientState.SHUTTING_DOWN + " but was: " + getState());
           }
           break;
         default:
@@ -231,9 +264,14 @@ public class StereoHttpClient {
     setState(ClientState.TERMINATED);
   }
 
+  /**
+   * Returns true if the http client can be started.
+   * @return a boolean
+   */
   public boolean canStart() {
     return state == ClientState.OFFLINE || state == ClientState.TERMINATED;
   }
+
   /**
    * Start the non-blocking client on our executor thread.
    */
@@ -250,10 +288,9 @@ public class StereoHttpClient {
       try {
         // Ready to go!
         ioReactor.execute(ioEventDispatch);
-      } catch (ConnectionClosedException ex)  {
+      } catch (ConnectionClosedException ex) {
         LOG.error("IO Reactor execution was disconnected", ex);
-      }
-      catch (final InterruptedIOException ex) {
+      } catch (final InterruptedIOException ex) {
         LOG.error("IO Reactor execution was interrupted", ex);
         setState(ClientState.TERMINATED);
       } catch (final IOException ex) {
@@ -376,14 +413,15 @@ public class StereoHttpClient {
   }
 
   /**
-   * States that the client can be in
+   * States that the client can be in. Following the state machine rules stated in the class docs.
+   * @see StereoHttpClient#setState(ClientState)
    */
   public enum ClientState {
     OFFLINE, STARTING, ONLINE, SHUTTING_DOWN, TERMINATED, ERROR
   }
 
   /**
-   * If requests are made prior to being online, they are stored in pending requests.
+   * If requests are made prior to being online, they are stored in pending request queue.
    */
   private static final class PendingRequest {
     public HttpHost host;
@@ -392,8 +430,9 @@ public class StereoHttpClient {
 
     /**
      * Constructor
-     * @param host host
-     * @param request request
+     *
+     * @param host            host
+     * @param request         request
      * @param requestConsumer consumer to call when request is constructed
      */
     public PendingRequest(HttpHost host, BasicHttpRequest request, Consumer<StereoHttpRequest> requestConsumer) {

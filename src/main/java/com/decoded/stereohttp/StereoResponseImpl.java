@@ -9,7 +9,7 @@ import java.util.Optional;
 
 
 /**
- * the HttpResponseWrapper for Apache
+ * The HttpResponseWrapper for Apache
  */
 public class StereoResponseImpl implements StereoResponse {
 
@@ -81,6 +81,11 @@ public class StereoResponseImpl implements StereoResponse {
   @Override
   public long getContentLength() {
     return rawHttpResponse.getEntity().getContentLength();
+  }
+
+  @Override
+  public HttpEntity getRawHttpEntity() {
+    return rawHttpEntity;
   }
 
   @Deprecated
