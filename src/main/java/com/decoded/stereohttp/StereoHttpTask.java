@@ -1,6 +1,7 @@
 package com.decoded.stereohttp;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,7 +68,7 @@ public class StereoHttpTask<T> {
   /**
    * internal method to run the request.
    * @param restRequest a {@link RestRequest}
-   * @param <ID_T> the type of identifier used to locate the value for the query.
+   * @param <ID_T> the type of identifier used to locate the deserializedContent for the query.
    * @return the type specified for this task.
    */
   private <ID_T> T performQuery(RestRequest<T, ID_T> restRequest) {
@@ -96,14 +97,27 @@ public class StereoHttpTask<T> {
 
           stereoRequest.map(response -> {
             debugIf(() -> "Stereo Response: " + response.getContent());
-            ObjectMapper mapper = new ObjectMapper();
-            try {
-              valueHolder.value = mapper.readValue(response.getContent(), tClass);
-              debugIf(() -> "Stereo read content to type: " + valueHolder.value.getClass().getName());
-              updateDelta.run();
-            } catch (Exception ex) {
-              valueHolder.exception = ex;
-              updateDelta.run();
+            valueHolder.status = response.getRawHttpResponse().getStatusLine().getStatusCode();
+
+            if(valueHolder.status == HttpStatus.SC_OK) {
+              ObjectMapper mapper = new ObjectMapper();
+              try {
+                valueHolder.deserializedContent = mapper.readValue(response.getContent(), tClass);
+                debugIf(() -> "Stereo read deserializedContent to type: " + valueHolder.deserializedContent.getClass().getName());
+                updateDelta.run();
+              } catch (Exception ex) {
+                valueHolder.exception = ex;
+                updateDelta.run();
+              }
+            } else {
+              valueHolder.serializedContent = response.getContent();
+              if (valueHolder.serializedContent.startsWith("<")) {
+                // html page
+                updateDelta.run();
+              } else if (valueHolder.serializedContent.startsWith("{")) {
+                // json
+                updateDelta.run();
+              }
             }
           }).exceptionally(ex -> {
             valueHolder.exception = ex;
@@ -116,7 +130,7 @@ public class StereoHttpTask<T> {
             debugIf(() -> "Completion mapper");
           });
         });
-    debugIf(() -> "Waiting on value to appear: " + timeout + " ms");
+    debugIf(() -> "Waiting on deserializedContent to appear: " + timeout + " ms");
 
     try {
       valueHolder.await();
@@ -125,22 +139,24 @@ public class StereoHttpTask<T> {
     }
 
     if (valueHolder.exception != null) {
-      LOG.error("Failed to acquire value: ", valueHolder.exception);
+      LOG.error("Failed to acquire deserializedContent: ", valueHolder.exception);
       throw new RuntimeException(valueHolder.exception);
     }
 
     debugIf(() -> "Stereo Latency: (min " + minLatency.get() + ", max " + maxLatency.get() + ")");
     // user should have data here.
-    return valueHolder.value;
+    return valueHolder.deserializedContent;
   }
 
   /**
-   * This contains a value reference that can be set in lambda scope.
+   * This contains a deserializedContent reference that can be set in lambda scope.
    *
    * @param <T>
    */
   private static final class ValueHolder<T> extends CountDownLatch {
-    T value;
+    T deserializedContent;
+    int status;
+    String serializedContent;
     Throwable exception;
     boolean wasCancelled;
 
