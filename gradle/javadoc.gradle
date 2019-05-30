@@ -4,4 +4,7 @@ javadoc {
     setTitle("Stereo Http Java Docs")
     setDestinationDir(new File(project.getProjectDir().getPath() + '/docs/javadoc'))
     setFailOnError(true)
+    options {
+        noTimestamp = true
+    }
 }
