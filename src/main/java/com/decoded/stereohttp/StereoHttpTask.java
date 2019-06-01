@@ -1,33 +1,51 @@
 package com.decoded.stereohttp;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 
 /**
- * Http Task, which returns a type of type T
- * The Stereo Task attempts to convert the raw result (which is expected to be in JSON format) into the type T,
- * along with any custom encoder or decoders required.
+ * Http Task, which returns a type of type T The Stereo Task attempts to convert the raw result (which is expected to be
+ * in JSON format) into the type T, along with any custom encoder or decoders required.
  *
  * <h2>Usage</h2>
  * <pre>
- *   new StereoHttpTask&lt;MyRecordType&gt;(MyRecordType.class, myStereoClient, 2000).execute(RestRequestBuilders....build());
+ *   new StereoHttpTask&lt;MyRecordType&gt;(MyRecordType.class, myStereoClient, 2000).execute(RestRequestBuilders...
+ *   .build());
  * </pre>
- * @param <T> the type to create using the underlying Http Response data  ({@link StereoResponse}) from a {@link StereoHttpRequest}.
+ *
+ * @param <T> the type to create using the underlying Http Response data  ({@link StereoResponse}) from a {@link
+ *            StereoHttpRequest}.
  */
 public class StereoHttpTask<T> {
   private static final Logger LOG = LoggerFactory.getLogger(StereoHttpTask.class);
 
-  private static AtomicLong maxLatency = new AtomicLong(Integer.MIN_VALUE);
-  private static AtomicLong minLatency = new AtomicLong(Integer.MAX_VALUE);
+  private static final AtomicLong MAX_LATENCY = new AtomicLong(Integer.MIN_VALUE);
+  private static final AtomicLong MIN_LATENCY = new AtomicLong(Integer.MAX_VALUE);
+  private static final BiConsumer<Long, CountDownLatch> UPDATE_DELTA = (startVal, latch) -> {
+    long delta = System.currentTimeMillis() - startVal;
+    if (delta < MIN_LATENCY.get()) {
+      LOG.info("Min latency improved!! " + delta);
+      MIN_LATENCY.set(delta);
+    }
 
+    if (delta > MAX_LATENCY.get()) {
+      LOG.info("Max latency degradation!!: " + delta);
+      MAX_LATENCY.set(delta);
+    }
+
+    latch.countDown();
+  };
   private final Class<T> tClass;
   private final StereoHttpClient stereoHttpClient;
   private final int timeout;
@@ -52,79 +70,87 @@ public class StereoHttpTask<T> {
     }
   }
 
+  public static long maxLatency() {
+    return MAX_LATENCY.get();
+  }
+
+  public static long minLatency() {
+    return MIN_LATENCY.get();
+  }
+
   /**
    * Execute the restRequest.
    *
    * @param restRequest the restRequest
    * @param <ID_T>      the identifier type for the request. Used as a pass through here.
    *
-   * @return CompletableFuture of T
+   * @return a {@link CompletableFuture} of a {@link Feedback}&lt;T&gt;
    */
-  public <ID_T> CompletableFuture<T> execute(RestRequest<T, ID_T> restRequest) {
+  public <ID_T> CompletableFuture<Feedback<T>> execute(Class<T> type, RestRequest<T, ID_T> restRequest) {
     debugIf(() -> "execute(): " + timeout + " ms");
-    return CompletableFuture.supplyAsync(() -> performQuery(restRequest), stereoHttpClient.getExecutorService());
+    return CompletableFuture.supplyAsync(() -> performQuery(restRequest, type, null), stereoHttpClient.getExecutorService());
+  }
+
+  public <ID_T> CompletableFuture<Feedback<List<T>>> executeBatch(TypeReference typeReference, RestRequest<List<T>, ID_T> restRequest) {
+    debugIf(() -> "execute(): " + timeout + " ms");
+    return CompletableFuture.supplyAsync(() -> performQuery(restRequest, null, typeReference), stereoHttpClient.getExecutorService());
   }
 
   /**
    * internal method to run the request.
+   *
    * @param restRequest a {@link RestRequest}
-   * @param <ID_T> the type of identifier used to locate the deserializedContent for the query.
-   * @return the type specified for this task.
+   * @param <ID_T>      the type of identifier used to locate the deserializedContent for the query.
+   *
+   * @return the type specified feedback object for this task.
    */
-  private <ID_T> T performQuery(RestRequest<T, ID_T> restRequest) {
+  private <X, ID_T> Feedback<X> performQuery(RestRequest<X, ID_T> restRequest, Class<X> clazz, TypeReference typeReference) {
 
     debugIf(() -> "Perform Query: " + restRequest.getRequestUri());
     // used for effectively final scope rules
 
-    ValueHolder<T> valueHolder = new ValueHolder<>();
+    Feedback<X> feedback = new Feedback<>();
     stereoHttpClient.httpQuery(restRequest.getHost(), restRequest.getPort(), restRequest.getRequestMethod(),
                                restRequest.getRequestUri(), (stereoRequest) -> {
           final long start = System.currentTimeMillis();
 
-          Runnable updateDelta = () -> {
-            long delta = System.currentTimeMillis() - start;
-            if (delta < minLatency.get()) {
-              LOG.warn("Min latency improved!! " + delta);
-              minLatency.set(delta);
-            }
-
-            if (delta > maxLatency.get()) {
-              LOG.warn("Max latency degradation!!: " + delta);
-              maxLatency.set(delta);
-            }
-            valueHolder.countDown();
-          };
-
           stereoRequest.map(response -> {
             debugIf(() -> "Stereo Response: " + response.getContent());
-            valueHolder.status = response.getRawHttpResponse().getStatusLine().getStatusCode();
 
-            if(valueHolder.status == HttpStatus.SC_OK) {
+            final int statusCode = response.getRawHttpResponse().getStatusLine().getStatusCode();
+
+            // all 2xx
+            if (statusCode == HttpStatus.SC_OK || (String.valueOf(statusCode).startsWith("20"))) {
               ObjectMapper mapper = new ObjectMapper();
               try {
-                valueHolder.deserializedContent = mapper.readValue(response.getContent(), tClass);
-                debugIf(() -> "Stereo read deserializedContent to type: " + valueHolder.deserializedContent.getClass().getName());
-                updateDelta.run();
+
+                X value;
+                if(clazz != null) {
+                  value=mapper.readValue(response.getContent(), clazz);
+                } else if(typeReference != null) {
+                  value = mapper.readValue(response.getContent(), typeReference);
+                } else {
+                  value = null;
+                }
+                debugIf(() -> "Stereo read deserializedContent to type: " + feedback.getDeserializedContent()
+                    .getClass()
+                    .getName());
+                feedback.setSuccess(statusCode, value, response.getContent());
               } catch (Exception ex) {
-                valueHolder.exception = ex;
-                updateDelta.run();
+                feedback.setError(HttpStatus.SC_INTERNAL_SERVER_ERROR, response.getContent(), ex);
               }
+              UPDATE_DELTA.accept(start, feedback);
             } else {
-              valueHolder.serializedContent = response.getContent();
-              if (valueHolder.serializedContent.startsWith("<")) {
-                // html page
-                updateDelta.run();
-              } else if (valueHolder.serializedContent.startsWith("{")) {
-                // json
-                updateDelta.run();
-              }
+              feedback.setError(statusCode, response.getContent(),
+                                new StereoRequestException(statusCode, "Request Exception Occurred"));
+              UPDATE_DELTA.accept(start, feedback);
             }
           }).exceptionally(ex -> {
-            valueHolder.exception = ex;
-            updateDelta.run();
+            UPDATE_DELTA.accept(start, feedback);
+            feedback.setError(HttpStatus.SC_INTERNAL_SERVER_ERROR, "", ex);
           }).cancelling(() -> {
-            valueHolder.wasCancelled = true;
-            updateDelta.run();
+            UPDATE_DELTA.accept(start, feedback);
+            feedback.cancel();
             LOG.warn("Cancelled the restRequest");
           }).andThen(() -> {
             debugIf(() -> "Completion mapper");
@@ -133,41 +159,15 @@ public class StereoHttpTask<T> {
     debugIf(() -> "Waiting on deserializedContent to appear: " + timeout + " ms");
 
     try {
-      valueHolder.await();
+      feedback.await();
     } catch (InterruptedException ex) {
-      valueHolder.exception = ex;
+      feedback.setError(HttpStatus.SC_INTERNAL_SERVER_ERROR, "{}",
+                        new StereoRequestException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Request Interrupted", ex));
     }
+    debugIf(() -> "Stereo Latency: (min " + MIN_LATENCY.get() + ", max " + MAX_LATENCY.get() + ")");
 
-    if (valueHolder.exception != null) {
-      LOG.error("Failed to acquire deserializedContent: ", valueHolder.exception);
-      throw new RuntimeException(valueHolder.exception);
-    }
-
-    debugIf(() -> "Stereo Latency: (min " + minLatency.get() + ", max " + maxLatency.get() + ")");
-    // user should have data here.
-    return valueHolder.deserializedContent;
+    // user should have data here, or null
+    return feedback;
   }
 
-  /**
-   * This contains a deserializedContent reference that can be set in lambda scope.
-   *
-   * @param <T>
-   */
-  private static final class ValueHolder<T> extends CountDownLatch {
-    T deserializedContent;
-    int status;
-    String serializedContent;
-    Throwable exception;
-    boolean wasCancelled;
-
-    public ValueHolder() {
-      super(1);
-    }
-
-    @Override
-    public void countDown() {
-      debugIf(() -> "Count Down from: " + this.getCount());
-      super.countDown();
-    }
-  }
 }
