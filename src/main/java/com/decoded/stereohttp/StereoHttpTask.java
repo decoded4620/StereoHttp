@@ -115,9 +115,9 @@ public class StereoHttpTask<T> {
           final long start = System.currentTimeMillis();
 
           stereoRequest.map(response -> {
-            debugIf(() -> "Stereo Response: " + response.getContent());
 
             final int statusCode = response.getRawHttpResponse().getStatusLine().getStatusCode();
+            debugIf(() -> "Stereo Response (" + statusCode + "): " + response.getContent());
 
             // all 2xx
             if (statusCode == HttpStatus.SC_OK || (String.valueOf(statusCode).startsWith("20"))) {
@@ -132,7 +132,7 @@ public class StereoHttpTask<T> {
                 } else {
                   value = null;
                 }
-                debugIf(() -> "Stereo read deserializedContent to type: " + feedback.getDeserializedContent()
+                debugIf(() -> "Stereo read deserializedContent to type: " + feedback.getDeserializedContent().get()
                     .getClass()
                     .getName());
                 feedback.setSuccess(statusCode, value, response.getContent());
@@ -166,6 +166,7 @@ public class StereoHttpTask<T> {
     }
     debugIf(() -> "Stereo Latency: (min " + MIN_LATENCY.get() + ", max " + MAX_LATENCY.get() + ")");
 
+    debugIf(() -> "Feedback: " + feedback.getStatus() + ", " + feedback.getSerializedContent());
     // user should have data here, or null
     return feedback;
   }

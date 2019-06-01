@@ -33,6 +33,7 @@ public class Feedback<T> extends CountDownLatch {
   }
 
   public Feedback<T> setSuccess(int status, T deserializedContent, String serializedContent) {
+    LOG.info("setSuccess(" + status + ", " + deserializedContent.getClass() + ", " + serializedContent + ")");
     this.status = status;
     this.deserializedContent = deserializedContent;
     this.serializedContent = serializedContent;
@@ -40,6 +41,7 @@ public class Feedback<T> extends CountDownLatch {
   }
 
   public Feedback<T> setError(int status, String serializedContent, Throwable cause) {
+    LOG.error("setError(" + status + ", " + serializedContent.getClass() + ")", cause);
     this.status = status;
     this.serializedContent = serializedContent;
     this.exception = cause;
@@ -47,6 +49,7 @@ public class Feedback<T> extends CountDownLatch {
   }
 
   public Feedback<T> cancel() {
+    LOG.warn("cancel()");
     this.cancelled = true;
     this.serializedContent = "{ \"error\":\"Request cancelled\"}";
 
