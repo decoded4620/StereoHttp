@@ -127,7 +127,7 @@ public class StereoHttpTask<T> {
       TypeReference typeReference
   ) {
 
-    debugIf(() -> "Perform Query: " + restRequest.getRequestUri());
+    debugIf(() -> "Stereo Request: " + restRequest.getRequestUri());
     // used for effectively final scope rules
 
     Feedback<X> feedback = new Feedback<>();
@@ -138,7 +138,7 @@ public class StereoHttpTask<T> {
           stereoRequest.map(response -> {
 
             final int statusCode = response.getRawHttpResponse().getStatusLine().getStatusCode();
-            debugIf(() -> "Stereo Response (" + statusCode + "): " + response.getContent());
+            debugIf(() -> "Stereo Response: [" + restRequest.getRequestUri() + " (" + statusCode + ")]: \n---\n" + response.getContent() + "\n---");
 
             // all 2xx
             if (statusCode == HttpStatus.SC_OK || (String.valueOf(statusCode).startsWith("20"))) {

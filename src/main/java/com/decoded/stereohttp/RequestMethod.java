@@ -10,7 +10,7 @@ public enum RequestMethod {
   POST("POST"),
   PUT("PUT"),
   DELETE("DELETE"),
-  CREATE("CONNECT");
+  CREATE("CREATE");
 
   private final String requestType;
 
