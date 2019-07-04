@@ -136,9 +136,9 @@ public class RestRequest<T, ID_T> {
     private String host;
     private int port;
     private String requestPath;
-    private List<Pair<String, String>> requestParams;
-    private RequestMethod requestMethod;
-    private Set<ID_T> identifiers;
+    private List<Pair<String, String>> requestParams = Collections.emptyList();
+    private RequestMethod requestMethod = RequestMethod.GET;
+    private Set<ID_T> identifiers = Collections.emptySet();
     private Class<T> tClass;
     private Class<ID_T> idClass;
 

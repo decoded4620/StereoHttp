@@ -32,28 +32,32 @@ public class Feedback<T> extends CountDownLatch {
     return exception != null && !cancelled;
   }
 
-  public Feedback<T> setSuccess(int status, T deserializedContent, String serializedContent) {
-    LOG.info("setSuccess(" + status + ", " + deserializedContent.getClass() + ", " + serializedContent + ")");
+  public Feedback<T> setSuccess(int status,  T deserializedContent, String serializedContent) {
+    LOG.info("Stereo Feedback Success(" + status + ", " + deserializedContent.getClass() + ", " + serializedContent + ")");
     this.status = status;
     this.deserializedContent = deserializedContent;
     this.serializedContent = serializedContent;
+
+    countDown();
     return this;
   }
 
   public Feedback<T> setError(int status, String serializedContent, Throwable cause) {
-    LOG.error("setError(" + status + ", " + serializedContent.getClass() + ")", cause);
+    LOG.error("Stereo Feedback Error(" + status + ", " + serializedContent.getClass() + ")", cause);
     this.status = status;
     this.serializedContent = serializedContent;
     this.exception = cause;
+    countDown();
     return this;
   }
 
   public Feedback<T> cancel() {
-    LOG.warn("cancel()");
+    LOG.warn("Stereo Feedback Cancel()");
     this.cancelled = true;
     this.serializedContent = "{ \"error\":\"Request cancelled\"}";
 
     this.status = HttpStatus.SC_NO_CONTENT;
+    countDown();
     return this;
   }
 

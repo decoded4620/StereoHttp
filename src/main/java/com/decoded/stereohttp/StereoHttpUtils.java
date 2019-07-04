@@ -19,8 +19,8 @@ class StereoHttpUtils {
    * @param httpResponse an HttpResponse.
    * @return Optional String
    */
-  static Optional<String> getContent(HttpResponse httpResponse) {
-    String content = null;
+  static String getContent(HttpResponse httpResponse) {
+    String content = "{}";
     try {
       InputStream stream = httpResponse.getEntity().getContent();
       if (stream.available() > 0) {
@@ -39,9 +39,6 @@ class StereoHttpUtils {
       LOG.error("Could not get content", ex);
     }
 
-    if (content == null) {
-      LOG.error("No content");
-    }
-    return Optional.ofNullable(content);
+    return content;
   }
 }

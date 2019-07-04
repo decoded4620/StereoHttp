@@ -355,6 +355,7 @@ public class StereoHttpClient {
                         String uri,
                         Consumer<StereoHttpRequest> requestConsumer
   ) {
+    debugIf(() -> ">> httpQuery: " + host + ":" + port + uri);
     query(Http.Scheme.HTTP, host, port, requestMethod, uri, requestConsumer);
   }
 

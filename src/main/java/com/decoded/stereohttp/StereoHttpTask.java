@@ -6,14 +6,14 @@ import org.apache.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.List;
-import java.util.Optional;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 
@@ -38,7 +38,7 @@ public class StereoHttpTask<T> {
   private static final AtomicInteger concurrentRequests = new AtomicInteger(0);
   private static final AtomicInteger MAX_CONCURRENT_REQUESTS = new AtomicInteger(0);
 
-  private static final BiConsumer<Long, CountDownLatch> UPDATE_DELTA = (startVal, latch) -> {
+  private static final Consumer<Long> UPDATE_DELTA = (startVal) -> {
     long delta = System.currentTimeMillis() - startVal;
     if (delta < MIN_LATENCY.get()) {
       LOG.info("Min latency improved!! " + delta);
@@ -49,8 +49,6 @@ public class StereoHttpTask<T> {
       LOG.info("Max latency degradation!!: " + delta);
       MAX_LATENCY.set(delta);
     }
-
-    latch.countDown();
   };
 
   private final StereoHttpClient stereoHttpClient;
@@ -64,7 +62,6 @@ public class StereoHttpTask<T> {
    * @param timeout          the timeout.
    */
   public StereoHttpTask(StereoHttpClient stereoHttpClient, int timeout) {
-
     this.stereoHttpClient = stereoHttpClient;
     this.timeout = timeout;
   }
@@ -72,7 +69,7 @@ public class StereoHttpTask<T> {
   // helper for efficient debug logging
   private static void debugIf(Supplier<String> message) {
     if (LOG.isDebugEnabled()) {
-      LOG.debug("{" + Thread.currentThread().getName() + "}:" + message.get());
+      LOG.debug(message.get());
     }
   }
 
@@ -93,25 +90,70 @@ public class StereoHttpTask<T> {
    * @return a {@link CompletableFuture} of a {@link Feedback}&lt;T&gt;
    */
   public <ID_T> CompletableFuture<Feedback<T>> execute(Class<T> type, RestRequest<T, ID_T> restRequest) {
-    int concurrent = concurrentRequests.incrementAndGet();
-
-    if(concurrent > MAX_CONCURRENT_REQUESTS.get()) {
-      MAX_CONCURRENT_REQUESTS.set(concurrent);
-      LOG.info("Concurrent requests now: " + concurrent);
-    }
-
-    debugIf(() -> "execute(): " + timeout + " ms");
-
-    return CompletableFuture.supplyAsync(() -> performQuery(restRequest, type, null),
-        stereoHttpClient.getExecutorService());
+    return performQuery(restRequest, type, null);
   }
 
   public <ID_T> CompletableFuture<Feedback<List<T>>> executeBatch(TypeReference typeReference,
       RestRequest<List<T>, ID_T> restRequest
   ) {
-    debugIf(() -> "execute(): " + timeout + " ms");
-    return CompletableFuture.supplyAsync(() -> performQuery(restRequest, null, typeReference),
-        stereoHttpClient.getExecutorService());
+    debugIf(() -> "executeBatch(): " + timeout + " ms");
+    return performQuery(restRequest, null, typeReference);
+  }
+
+  /**
+   * Process the ok type feedback
+   * @param statusCode the code
+   * @param feedback the feedback object
+   * @param clazz the class to deserialize to
+   * @param typeReference the type to deserialze to
+   * @param response the response
+   * @param startTime the start time of the request
+   * @param <X> the type
+   */
+  private <X> void processOkResponseFeedback(int statusCode,
+      Feedback<X> feedback,
+      Class<X> clazz,
+      TypeReference<X> typeReference,
+      StereoResponse response,
+      long startTime
+  ) {
+    UPDATE_DELTA.accept(startTime);
+    if (response.getContent() != null) {
+      ObjectMapper mapper = new ObjectMapper();
+      try {
+        if (clazz != null) {
+          feedback.setSuccess(statusCode, mapper.readValue(response.getContent(), clazz), response.getContent());
+        } else if (typeReference != null) {
+          feedback.setSuccess(statusCode, mapper.readValue(response.getContent(), typeReference),
+              response.getContent());
+        } else {
+          feedback.setError(HttpStatus.SC_BAD_REQUEST, response.getContent(),
+              new StereoRequestException(HttpStatus.SC_BAD_REQUEST, "Could not detect required type"));
+        }
+      } catch (IOException ex) {
+        feedback.setError(HttpStatus.SC_INTERNAL_SERVER_ERROR, response.getContent(), ex);
+      }
+    } else {
+      feedback.setSuccess(statusCode, null, response.getContent());
+    }
+  }
+
+  /**
+   * Process the error type feedback
+   * @param statusCode the status
+   * @param feedback the feedback
+   * @param response the response
+   * @param startTime the start time of the request
+   * @param <X> the error response
+   */
+  private <X> void processErrorResponseFeedback(int statusCode,
+      Feedback<X> feedback,
+      StereoResponse response,
+      long startTime
+  ) {
+    feedback.setError(statusCode, response == null ? "" : response.getContent(),
+        new StereoRequestException(statusCode, "Request Exception Occurred"));
+    UPDATE_DELTA.accept(startTime);
   }
 
   /**
@@ -122,81 +164,73 @@ public class StereoHttpTask<T> {
    *
    * @return the type specified feedback object for this task.
    */
-  private <X, ID_T> Feedback<X> performQuery(RestRequest<X, ID_T> restRequest,
+  private <X, ID_T> CompletableFuture<Feedback<X>> performQuery(RestRequest<X, ID_T> restRequest,
       Class<X> clazz,
       TypeReference typeReference
   ) {
 
-    debugIf(() -> "Stereo Request: " + restRequest.getRequestUri());
-    // used for effectively final scope rules
+    CompletableFuture<Feedback<X>> future = new CompletableFuture<>();
+    debugIf(() -> "Perform Stereo Query " + clazz.getSimpleName() + ", " + restRequest.getRequestUri());
+    Callable<Feedback<X>> feedbackRunner = () -> {
+      debugIf(() -> "Stereo Request Enqueue: [" + restRequest.getRequestUri() + "]");
+      // used for effectively final scope rules
 
-    Feedback<X> feedback = new Feedback<>();
-    stereoHttpClient.httpQuery(restRequest.getHost(), restRequest.getPort(), restRequest.getRequestMethod(),
-        restRequest.getRequestUri(), (stereoRequest) -> {
-          final long start = System.currentTimeMillis();
+      Feedback<X> feedback = new Feedback<>();
+      int concurrent = concurrentRequests.incrementAndGet();
 
-          stereoRequest.map(response -> {
+      if (concurrent > MAX_CONCURRENT_REQUESTS.get()) {
+        MAX_CONCURRENT_REQUESTS.set(concurrent);
+      }
 
-            final int statusCode = response.getRawHttpResponse().getStatusLine().getStatusCode();
-            debugIf(() -> "Stereo Response: [" + restRequest.getRequestUri() + " (" + statusCode + ")]: \n---\n" + response.getContent() + "\n---");
+      stereoHttpClient.httpQuery(restRequest.getHost(), restRequest.getPort(), restRequest.getRequestMethod(),
+          restRequest.getRequestUri(), (stereoRequest) -> {
+            final long start = System.currentTimeMillis();
+            debugIf(() -> "Stereo Request Start: [" + restRequest.getRequestUri() + "]");
+            stereoRequest.map(response -> {
 
-            // all 2xx
-            if (statusCode == HttpStatus.SC_OK || (String.valueOf(statusCode).startsWith("20"))) {
-              ObjectMapper mapper = new ObjectMapper();
-              try {
-
-                X value = null;
-                if (clazz != null) {
-                  value = mapper.readValue(response.getContent(), clazz);
-                } else if (typeReference != null) {
-                  value = mapper.readValue(response.getContent(), typeReference);
-                } else {
-                  feedback.setError(HttpStatus.SC_BAD_REQUEST, response.getContent(),
-                      new StereoRequestException(HttpStatus.SC_BAD_REQUEST, "Could not detect required type"));
+              final int statusCode = response.getRawHttpResponse().getStatusLine().getStatusCode();
+              debugIf(
+                  () -> "Stereo Response: [" + restRequest.getRequestUri() + " (" + statusCode + ")]: \n---\n" + response
+                      .getContent() + "\n---");
+              // all 2xx
+              if (statusCode == HttpStatus.SC_OK || (String.valueOf(statusCode).startsWith("20"))) {
+                processOkResponseFeedback(statusCode, feedback, clazz, typeReference, response, start);
+              } else {
+                // HUGE TODO - make sure we support different groups of status types.
+                if(statusCode != HttpStatus.SC_INTERNAL_SERVER_ERROR) {
+                  LOG.warn("TODO - Support: " + statusCode + " status code group");
                 }
 
-                Optional.ofNullable(value).ifPresent(v -> {
-                  feedback.setSuccess(statusCode, v, response.getContent());
-
-                  debugIf(() -> "Stereo read deserializedContent to type: " + v.getClass().getName());
-                });
-
-              } catch (Exception ex) {
-                feedback.setError(HttpStatus.SC_INTERNAL_SERVER_ERROR, response.getContent(), ex);
+                processErrorResponseFeedback(statusCode, feedback, response, start);
               }
-              UPDATE_DELTA.accept(start, feedback);
-            } else {
-              feedback.setError(statusCode, response.getContent(),
-                  new StereoRequestException(statusCode, "Request Exception Occurred"));
-              UPDATE_DELTA.accept(start, feedback);
-            }
-          }).exceptionally(ex -> {
-            UPDATE_DELTA.accept(start, feedback);
-            feedback.setError(HttpStatus.SC_INTERNAL_SERVER_ERROR, "", ex);
-          }).cancelling(() -> {
-            UPDATE_DELTA.accept(start, feedback);
-            feedback.cancel();
-            LOG.warn("Cancelled the restRequest");
-          }).andThen(() -> {
-            debugIf(() -> "Completion mapper");
+            }).exceptionally(ex -> {
+              processErrorResponseFeedback(HttpStatus.SC_INTERNAL_SERVER_ERROR, feedback, null, start);
+            }).cancelling(() -> {
+              UPDATE_DELTA.accept(start);
+              feedback.cancel();
+              LOG.warn("Cancelled the restRequest");
+            });
           });
-        });
 
-    try {
-      long start = System.currentTimeMillis();
-      feedback.await(timeout, TimeUnit.MILLISECONDS);
-      if(System.currentTimeMillis() - start > timeout) {
-        LOG.error("Timed out!");
-        feedback.setError(HttpStatus.SC_REQUEST_TIMEOUT, "{\"message\": \"Request timed out\"}",
-            new StereoRequestException(HttpStatus.SC_REQUEST_TIMEOUT, "Request Timed out."));
+      try {
+        if (!feedback.await(timeout, TimeUnit.MILLISECONDS)) {
+          LOG.error("Request Timed out!", new StereoRequestException(408, "Request Timed Out!"));
+          feedback.setError(HttpStatus.SC_REQUEST_TIMEOUT, "{\"message\": \"Request timed out\"}",
+              new StereoRequestException(HttpStatus.SC_REQUEST_TIMEOUT, "Request Timed out."));
+
+        }
+      } catch (InterruptedException ex) {
+        feedback.setError(HttpStatus.SC_INTERNAL_SERVER_ERROR, "{\"message\": \"Request interrupted\"}",
+            new StereoRequestException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Request Interrupted", ex));
       }
-    } catch (InterruptedException ex) {
-      feedback.setError(HttpStatus.SC_INTERNAL_SERVER_ERROR, "{\"message\": \"Request interrupted\"}",
-          new StereoRequestException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Request Interrupted", ex));
-    }
 
-    concurrentRequests.decrementAndGet();
-    // user should have data here, or null
-    return feedback;
+      concurrentRequests.decrementAndGet();
+      // user should have data here, or null
+      future.complete(feedback);
+      return feedback;
+    };
+    stereoHttpClient.getExecutorService().submit(feedbackRunner);
+
+    return future;
   }
 }

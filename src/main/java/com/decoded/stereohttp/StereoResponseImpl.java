@@ -35,7 +35,7 @@ public class StereoResponseImpl implements StereoResponse {
     this.isStreaming = this.rawHttpEntity.isStreaming();
     this.isChunked = this.rawHttpEntity.isChunked();
     this.isRepeatable = this.rawHttpEntity.isRepeatable();
-    this.content = StereoHttpUtils.getContent(rawHttpResponse).orElse(null);
+    this.content = StereoHttpUtils.getContent(rawHttpResponse);
   }
 
   @Override
