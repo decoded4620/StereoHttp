@@ -8,10 +8,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -33,30 +32,19 @@ import java.util.function.Supplier;
 public class StereoHttpTask<T> {
   private static final Logger LOG = LoggerFactory.getLogger(StereoHttpTask.class);
 
+  // used to accurately track operation status
   private static final AtomicLong MAX_LATENCY = new AtomicLong(Integer.MIN_VALUE);
-  private static final AtomicLong MIN_LATENCY = new AtomicLong(Integer.MAX_VALUE);
-  private static final AtomicInteger concurrentRequests = new AtomicInteger(0);
-  private static final AtomicInteger MAX_CONCURRENT_REQUESTS = new AtomicInteger(0);
+  private static final AtomicLong MIN_LATENCY = new AtomicLong(0);
+  private static final AtomicLong CONCURRENT_REQUESTS = new AtomicLong(0);
+  private static final AtomicLong MAX_CONCURRENT_REQUESTS = new AtomicLong(0);
+  private static final AtomicLong TOTAL_REQUESTS = new AtomicLong(0);
 
-  private static final Consumer<Long> UPDATE_DELTA = (startVal) -> {
-    long delta = System.currentTimeMillis() - startVal;
-    if (delta < MIN_LATENCY.get()) {
-      LOG.info("Min latency improved!! " + delta);
-      MIN_LATENCY.set(delta);
-    }
-
-    if (delta > MAX_LATENCY.get()) {
-      LOG.info("Max latency degradation!!: " + delta);
-      MAX_LATENCY.set(delta);
-    }
-  };
 
   private final StereoHttpClient stereoHttpClient;
   private final int timeout;
 
   /**
    * StereoHttpTask
-   *
    *
    * @param stereoHttpClient the stereo client.
    * @param timeout          the timeout.
@@ -73,164 +61,318 @@ public class StereoHttpTask<T> {
     }
   }
 
+  /**
+   * Total requests that have been processed by {@link StereoHttpTask}
+   *
+   * @return a long
+   */
+  public static long totalRequests() {
+    return TOTAL_REQUESTS.get();
+  }
+
+  /**
+   * Maximum latency incurred by a request
+   *
+   * @return the value in milliseconds
+   */
   public static long maxLatency() {
     return MAX_LATENCY.get();
   }
 
+  /**
+   * Minimum latency incurred by a request
+   *
+   * @return the value in milliseconds
+   */
   public static long minLatency() {
     return MIN_LATENCY.get();
   }
 
   /**
+   * The maximum value of concurrency in this client.
+   *
+   * @return the number of maximum concurrent requests
+   */
+  public static long maxConcurrentRequests() {
+    return MAX_CONCURRENT_REQUESTS.get();
+  }
+
+  /**
+   * Total number of concurrent requests in progress right now.
+   *
+   * @return the number of concurrent requests.
+   */
+  public static long concurrentRequests() {
+    return CONCURRENT_REQUESTS.get();
+  }
+
+  /**
    * Execute the restRequest.
    *
-   * @param restRequest the restRequest
-   * @param <ID_T>      the identifier type for the request. Used as a pass through here.
+   * @param request the restRequest
+   * @param <ID_T>  the identifier type for the request. Used as a pass through here.
    *
    * @return a {@link CompletableFuture} of a {@link Feedback}&lt;T&gt;
    */
-  public <ID_T> CompletableFuture<Feedback<T>> execute(Class<T> type, RestRequest<T, ID_T> restRequest) {
-    return performQuery(restRequest, type, null);
+  public <ID_T> CompletableFuture<Feedback<T>> execute(Class<T> type, RestRequest<T, ID_T> request) {
+    return executeRequest(request, type, null);
   }
 
+  /**
+   * Execute a batch request.
+   *
+   * @param typeReference the type reference.
+   * @param request       a request.
+   * @param <ID_T>        the id type.
+   *
+   * @return a completable future.
+   */
   public <ID_T> CompletableFuture<Feedback<List<T>>> executeBatch(TypeReference typeReference,
-      RestRequest<List<T>, ID_T> restRequest
-  ) {
+      RestRequest<List<T>, ID_T> request) {
     debugIf(() -> "executeBatch(): " + timeout + " ms");
-    return performQuery(restRequest, null, typeReference);
+    return executeRequest(request, null, typeReference);
+  }
+
+  private void setFeedbackResponseError(Feedback feedback, int status, String content, String message) {
+    LOG.info("Http Response Feedback Error: " + status + " -> " + message);
+    feedback.setError(status, content,
+        new StereoResponseException(status,
+            message));
+  }
+  private void setFeedbackRequestError(Feedback feedback, int status, String content, String message) {
+    LOG.info("Http Request Feedback Error: " + status + " -> " + message);
+    feedback.setError(status, content,
+        new StereoRequestException(status,
+            message));
+  }
+  /**
+   * Process the error type feedback
+   *
+   * @param <X>        the error response
+   * @param feedback   the feedback
+   * @param statusCode the status
+   * @param response   the response
+   * @param message
+   */
+  private <X> void setFeedbackResponseError(Feedback<X> feedback,
+      int statusCode,
+      StereoResponse response,
+      final String message,
+      Throwable cause) {
+    LOG.info("Http Response Exception: " + cause.getMessage());
+    feedback.setError(statusCode, response == null ? "" : response.getContent(),
+        new StereoResponseException(statusCode, message, cause));
+  }
+  /**
+   * Process the error type feedback
+   *
+   * @param <X>        the error response
+   * @param feedback   the feedback
+   * @param statusCode the status
+   * @param response   the response
+   * @param message
+   */
+  private <X> void setFeedbackRequestError(Feedback<X> feedback,
+      int statusCode,
+      StereoResponse response,
+      final String message,
+      Throwable cause) {
+    LOG.info("Http Request Exception: " + cause.getMessage());
+    feedback.setError(statusCode, response == null ? "" : response.getContent(),
+        new StereoRequestException(statusCode, message, cause));
   }
 
   /**
    * Process the ok type feedback
-   * @param statusCode the code
-   * @param feedback the feedback object
-   * @param clazz the class to deserialize to
+   *
+   * @param statusCode    the code
+   * @param feedback      the feedback object
+   * @param clazz         the class to deserialize to
    * @param typeReference the type to deserialze to
-   * @param response the response
-   * @param startTime the start time of the request
-   * @param <X> the type
+   * @param response      the response
+   * @param <X>           the type
    */
-  private <X> void processOkResponseFeedback(int statusCode,
+  private <X> void process2xxResponseFeedback(int statusCode,
       Feedback<X> feedback,
       Class<X> clazz,
       TypeReference<X> typeReference,
-      StereoResponse response,
-      long startTime
-  ) {
-    UPDATE_DELTA.accept(startTime);
-    if (response.getContent() != null) {
-      ObjectMapper mapper = new ObjectMapper();
-      try {
-        if (clazz != null) {
-          feedback.setSuccess(statusCode, mapper.readValue(response.getContent(), clazz), response.getContent());
-        } else if (typeReference != null) {
-          feedback.setSuccess(statusCode, mapper.readValue(response.getContent(), typeReference),
-              response.getContent());
-        } else {
-          feedback.setError(HttpStatus.SC_BAD_REQUEST, response.getContent(),
-              new StereoRequestException(HttpStatus.SC_BAD_REQUEST, "Could not detect required type"));
-        }
-      } catch (IOException ex) {
-        feedback.setError(HttpStatus.SC_INTERNAL_SERVER_ERROR, response.getContent(), ex);
-      }
+      StereoResponse response) {
+    debugIf(() -> "Process ok response feedback: " + statusCode);
+    if(response == null) {
+      setFeedbackResponseError(feedback, HttpStatus.SC_INTERNAL_SERVER_ERROR, "",
+          "No Stereo Response was provided for processing!");
     } else {
-      feedback.setSuccess(statusCode, null, response.getContent());
+      if (response.getContent() != null) {
+        if (clazz == null && typeReference == null) {
+          setFeedbackRequestError(feedback, HttpStatus.SC_BAD_REQUEST, response.getContent(),
+              "Could not detect required type for deserialization");
+        } else {
+          X deserialized = null;
+          try {
+            if (clazz != null) {
+              deserialized = new ObjectMapper().readValue(response.getContent(), clazz);
+            } else {
+              deserialized = new ObjectMapper().readValue(response.getContent(), typeReference);
+            }
+            feedback.setSuccess(statusCode, deserialized, response.getContent());
+          } catch (IOException ex) {
+            LOG.info("An Exception occurred while mapping the response: ", ex);
+            feedback.setSuccess(statusCode, null, response.getContent());
+          }
+        }
+      } else {
+        debugIf(() -> "Successfully processed feedback response:" + response.getRawHttpResponse().getStatusLine().toString());
+        feedback.setSuccess(statusCode, null, response.getContent());
+      }
     }
   }
 
   /**
-   * Process the error type feedback
-   * @param statusCode the status
-   * @param feedback the feedback
-   * @param response the response
-   * @param startTime the start time of the request
-   * @param <X> the error response
+   * Tracking bookend start
+   *
+   * @return a long, the start time of a request in milliseconds.
    */
-  private <X> void processErrorResponseFeedback(int statusCode,
-      Feedback<X> feedback,
-      StereoResponse response,
-      long startTime
-  ) {
-    feedback.setError(statusCode, response == null ? "" : response.getContent(),
-        new StereoRequestException(statusCode, "Request Exception Occurred"));
-    UPDATE_DELTA.accept(startTime);
+  private long requestStarted() {
+    final long start = System.currentTimeMillis();
+    debugIf(() -> "Request started at " + start + " ms  >>>> >>>> >>>> >>>> >>>>");
+    long concurrentRequests = CONCURRENT_REQUESTS.incrementAndGet();
+
+    if (concurrentRequests > MAX_CONCURRENT_REQUESTS.get()) {
+      MAX_CONCURRENT_REQUESTS.set(concurrentRequests);
+    }
+
+    return start;
   }
 
   /**
-   * internal method to run the request.
+   * Tracking bookend complete
    *
-   * @param restRequest a {@link RestRequest}
-   * @param <ID_T>      the type of identifier used to locate the deserializedContent for the query.
+   * @param startVal the start value of the request in milliseconds.
+   */
+  private void requestCompleted(long startVal) {
+    CONCURRENT_REQUESTS.decrementAndGet();
+    long delta = System.currentTimeMillis() - startVal;
+    debugIf(() -> "Request completed in " + delta + " ms <<<< <<<< <<<< <<<< <<<<");
+
+    if (delta < MIN_LATENCY.get()) {
+      debugIf(() -> "Min latency improved!! " + delta);
+      MIN_LATENCY.set(delta);
+    }
+
+    if (delta > MAX_LATENCY.get()) {
+      debugIf(() -> "Max latency degradation!!: " + delta);
+      MAX_LATENCY.set(delta);
+    }
+
+    TOTAL_REQUESTS.incrementAndGet();
+  }
+
+  /**
+   * Internal method to run the request.
+   *
+   * @param httpRequest a {@link RestRequest}
+   * @param <ID_T>      the type of identifier used to locate the  content for the query.
    *
    * @return the type specified feedback object for this task.
    */
-  private <X, ID_T> CompletableFuture<Feedback<X>> performQuery(RestRequest<X, ID_T> restRequest,
+  private <X, ID_T> CompletableFuture<Feedback<X>> executeRequest(RestRequest<X, ID_T> httpRequest,
       Class<X> clazz,
-      TypeReference typeReference
-  ) {
+      TypeReference<X> typeReference) {
+    CompletableFuture<Feedback<X>> requestCompleteFuture = new CompletableFuture<>();
+    debugIf(() -> "Perform Stereo request: " + httpRequest.getRequestUri());
 
-    CompletableFuture<Feedback<X>> future = new CompletableFuture<>();
-    debugIf(() -> "Perform Stereo Query " + clazz.getSimpleName() + ", " + restRequest.getRequestUri());
-    Callable<Feedback<X>> feedbackRunner = () -> {
-      debugIf(() -> "Stereo Request Enqueue: [" + restRequest.getRequestUri() + "]");
-      // used for effectively final scope rules
-
+    Runnable feedbackRunner = () -> {
+      long start = requestStarted();
       Feedback<X> feedback = new Feedback<>();
-      int concurrent = concurrentRequests.incrementAndGet();
 
-      if (concurrent > MAX_CONCURRENT_REQUESTS.get()) {
-        MAX_CONCURRENT_REQUESTS.set(concurrent);
+      debugIf(() -> "Stereo Request Enqueue: [" + httpRequest.getRequestUri() + "]");
+
+      Consumer<StereoResponse> httpResponseCallback = (stereoResponse) -> {
+        final int statusCode = stereoResponse.getRawHttpResponse().getStatusLine().getStatusCode();
+        debugIf(() -> "Http Response captured: " + httpRequest.getRequestUri() + " => " + statusCode);
+
+        switch (statusCode) {
+          // all 2xx
+          case HttpStatus.SC_OK:
+          case HttpStatus.SC_NO_CONTENT:
+          case HttpStatus.SC_ACCEPTED:
+          case HttpStatus.SC_CREATED:
+          case HttpStatus.SC_MULTI_STATUS:
+          case HttpStatus.SC_NON_AUTHORITATIVE_INFORMATION:
+          case HttpStatus.SC_PARTIAL_CONTENT:
+            process2xxResponseFeedback(statusCode, feedback, clazz, typeReference, stereoResponse);
+            break;
+          case HttpStatus.SC_CONTINUE:
+            setFeedbackRequestError(feedback, statusCode, stereoResponse.getContent(),
+                "Continuing: " + statusCode + "->" + httpRequest.getRequestUri());
+            break;
+          case HttpStatus.SC_INTERNAL_SERVER_ERROR:
+            setFeedbackRequestError(feedback, statusCode, stereoResponse.getContent(),
+                "Internal Server Error: " + statusCode + "->" + httpRequest.getRequestUri());
+            break;
+          case HttpStatus.SC_NOT_FOUND:
+            setFeedbackRequestError(feedback, statusCode, stereoResponse.getContent(),
+                "Not Found: " + statusCode + "->" + httpRequest.getRequestUri());
+            break;
+          case HttpStatus.SC_BAD_REQUEST:
+            setFeedbackRequestError(feedback, statusCode, stereoResponse.getContent(),
+                "Bad Request: " + statusCode + "->" + httpRequest.getRequestUri());
+            break;
+          default:
+            setFeedbackRequestError(feedback, statusCode, stereoResponse.getContent(),
+                "Unsupported http status: " + statusCode + "->" + httpRequest.getRequestUri());
+            // HUGE TODO - make sure we support different groups of status types.
+            break;
+        }
+      };
+
+      Consumer<StereoHttpRequest> requestCreateCallback = stereoRequest -> {
+        debugIf(() -> "Stereo Request Start: [" + httpRequest.getRequestUri() + "]");
+        stereoRequest.map(response -> {
+          debugIf(() -> "Stereo Response: [" + httpRequest.getRequestUri() + " (" + response.getRawHttpResponse()
+              .getStatusLine()
+              .getStatusCode() + ")]: \n---\n" + response.getContent() + "\n---");
+          httpResponseCallback.accept(response);
+        }).exceptionally(ex -> {
+          setFeedbackRequestError(feedback, HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "Exception occurred: " , ex);
+        }).cancelling(() -> {
+
+          setFeedbackRequestError(feedback, HttpStatus.SC_INTERNAL_SERVER_ERROR, "", "Request was cancelled");
+          feedback.cancel();
+        });
+      };
+
+      if (RequestMethod.isWriteMethod(httpRequest.getRequestMethod())) {
+        stereoHttpClient.stereoWriteRequest(httpRequest, requestCreateCallback, httpRequest::getBody);
+      } else {
+        stereoHttpClient.stereoReadRequest(httpRequest, requestCreateCallback);
       }
-
-      stereoHttpClient.httpQuery(restRequest.getHost(), restRequest.getPort(), restRequest.getRequestMethod(),
-          restRequest.getRequestUri(), (stereoRequest) -> {
-            final long start = System.currentTimeMillis();
-            debugIf(() -> "Stereo Request Start: [" + restRequest.getRequestUri() + "]");
-            stereoRequest.map(response -> {
-
-              final int statusCode = response.getRawHttpResponse().getStatusLine().getStatusCode();
-              debugIf(
-                  () -> "Stereo Response: [" + restRequest.getRequestUri() + " (" + statusCode + ")]: \n---\n" + response
-                      .getContent() + "\n---");
-              // all 2xx
-              if (statusCode == HttpStatus.SC_OK || (String.valueOf(statusCode).startsWith("20"))) {
-                processOkResponseFeedback(statusCode, feedback, clazz, typeReference, response, start);
-              } else {
-                // HUGE TODO - make sure we support different groups of status types.
-                if(statusCode != HttpStatus.SC_INTERNAL_SERVER_ERROR) {
-                  LOG.warn("TODO - Support: " + statusCode + " status code group");
-                }
-
-                processErrorResponseFeedback(statusCode, feedback, response, start);
-              }
-            }).exceptionally(ex -> {
-              processErrorResponseFeedback(HttpStatus.SC_INTERNAL_SERVER_ERROR, feedback, null, start);
-            }).cancelling(() -> {
-              UPDATE_DELTA.accept(start);
-              feedback.cancel();
-              LOG.warn("Cancelled the restRequest");
-            });
-          });
 
       try {
+        LOG.info("Waiting for request to complete..." + httpRequest.getRequestUri());
         if (!feedback.await(timeout, TimeUnit.MILLISECONDS)) {
-          LOG.error("Request Timed out!", new StereoRequestException(408, "Request Timed Out!"));
-          feedback.setError(HttpStatus.SC_REQUEST_TIMEOUT, "{\"message\": \"Request timed out\"}",
-              new StereoRequestException(HttpStatus.SC_REQUEST_TIMEOUT, "Request Timed out."));
-
+          LOG.info("Request Timed out! " + httpRequest.getRequestUri());
+          setFeedbackRequestError(feedback, HttpStatus.SC_INTERNAL_SERVER_ERROR, "", "Request Timed out!");
         }
       } catch (InterruptedException ex) {
-        feedback.setError(HttpStatus.SC_INTERNAL_SERVER_ERROR, "{\"message\": \"Request interrupted\"}",
-            new StereoRequestException(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Request Interrupted", ex));
+        LOG.info("Request Interrupted: " + httpRequest.getRequestUri() + ", error: " + ex.getMessage());
+        setFeedbackRequestError(feedback, HttpStatus.SC_INTERNAL_SERVER_ERROR, "", "Http Request was interrupted");
       }
 
-      concurrentRequests.decrementAndGet();
-      // user should have data here, or null
-      future.complete(feedback);
-      return feedback;
-    };
-    stereoHttpClient.getExecutorService().submit(feedbackRunner);
+      requestCompleted(start);
 
-    return future;
+      LOG.info("Request Completed!");
+      // user should have data here, or null
+      requestCompleteFuture.complete(feedback);
+    };
+
+    try {
+      stereoHttpClient.getExecutorService().submit(feedbackRunner);
+    } catch (RejectedExecutionException ex) {
+      LOG.error("Could not schedule the request, stereo http client executor service threw an exception: ", ex);
+      requestCompleteFuture.complete(null);
+    }
+
+    return requestCompleteFuture;
   }
 }

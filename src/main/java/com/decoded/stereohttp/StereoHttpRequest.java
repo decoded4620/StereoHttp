@@ -56,17 +56,18 @@ public class StereoHttpRequest {
     this.httpRequest = httpRequest;
     this.coreContext = HttpCoreContext.create();
     this.callback = new FutureCallback<HttpResponse>() {
-      public void completed(final HttpResponse response) {
+        public void completed(final HttpResponse response) {
+        debugIf(() -> "StereoHttpRequest completed: " + response.getStatusLine().getStatusCode());
         completionMappers.forEach(consumer -> consumer.accept(new StereoResponseImpl(response)));
       }
 
       public void failed(final Exception ex) {
-        LOG.error("StereoHttpRequest Failed: ", ex);
+        LOG.info("StereoHttpRequest failed, consumer will handle exception " + ex.getMessage());
         errorMappers.forEach(consumer -> consumer.accept(ex));
       }
 
       public void cancelled() {
-        LOG.error("StereoHttpRequest was cancelled");
+        LOG.info("StereoHttpRequest was cancelled: " + httpRequest.getRequestLine().toString());
         cancellationMappers.forEach(Runnable::run);
       }
     };

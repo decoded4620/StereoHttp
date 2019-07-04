@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":9,"i2":9};
+var methods = {"i0":9,"i1":10,"i2":9,"i3":9};
 var tabs = {65535:["t0","All Methods"],1:["t1","Static Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -117,7 +117,7 @@ var activeTableTab = "activeTableTab";
 <br>
 <pre>public enum <span class="typeNameLabel">RequestMethod</span>
 extends java.lang.Enum&lt;<a href="../../../com/decoded/stereohttp/RequestMethod.html" title="enum in com.decoded.stereohttp">RequestMethod</a>&gt;</pre>
-<div class="block">Http RestRequest Methods</div>
+<div class="block">Http RestRequest Methods for http 1.1</div>
 </li>
 </ul>
 </div>
@@ -136,16 +136,22 @@ extends java.lang.Enum&lt;<a href="../../../com/decoded/stereohttp/RequestMethod
 <th class="colOne" scope="col">Enum Constant and Description</th>
 </tr>
 <tr class="altColor">
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RequestMethod.html#CONNECT">CONNECT</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
 <td class="colOne"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RequestMethod.html#CREATE">CREATE</a></span></code>&nbsp;</td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colOne"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RequestMethod.html#DELETE">DELETE</a></span></code>&nbsp;</td>
 </tr>
-<tr class="altColor">
+<tr class="rowColor">
 <td class="colOne"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RequestMethod.html#GET">GET</a></span></code>&nbsp;</td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colOne"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RequestMethod.html#HEAD">HEAD</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RequestMethod.html#OPTIONS">OPTIONS</a></span></code>&nbsp;</td>
 </tr>
 <tr class="altColor">
 <td class="colOne"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RequestMethod.html#POST">POST</a></span></code>&nbsp;</td>
@@ -172,16 +178,20 @@ extends java.lang.Enum&lt;<a href="../../../com/decoded/stereohttp/RequestMethod
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
+<td class="colFirst"><code>static boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RequestMethod.html#isWriteMethod-com.decoded.stereohttp.RequestMethod-">isWriteMethod</a></span>(<a href="../../../com/decoded/stereohttp/RequestMethod.html" title="enum in com.decoded.stereohttp">RequestMethod</a>&nbsp;method)</code>&nbsp;</td>
+</tr>
+<tr id="i1" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RequestMethod.html#methodName--">methodName</a></span>()</code>&nbsp;</td>
 </tr>
-<tr id="i1" class="rowColor">
+<tr id="i2" class="altColor">
 <td class="colFirst"><code>static <a href="../../../com/decoded/stereohttp/RequestMethod.html" title="enum in com.decoded.stereohttp">RequestMethod</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RequestMethod.html#valueOf-java.lang.String-">valueOf</a></span>(java.lang.String&nbsp;name)</code>
 <div class="block">Returns the enum constant of this type with the specified name.</div>
 </td>
 </tr>
-<tr id="i2" class="altColor">
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code>static <a href="../../../com/decoded/stereohttp/RequestMethod.html" title="enum in com.decoded.stereohttp">RequestMethod</a>[]</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RequestMethod.html#values--">values</a></span>()</code>
 <div class="block">Returns an array containing the constants of this enum type, in
@@ -274,10 +284,28 @@ the order they are declared.</div>
 <a name="CREATE">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>CREATE</h4>
 <pre>public static final&nbsp;<a href="../../../com/decoded/stereohttp/RequestMethod.html" title="enum in com.decoded.stereohttp">RequestMethod</a> CREATE</pre>
+</li>
+</ul>
+<a name="CONNECT">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>CONNECT</h4>
+<pre>public static final&nbsp;<a href="../../../com/decoded/stereohttp/RequestMethod.html" title="enum in com.decoded.stereohttp">RequestMethod</a> CONNECT</pre>
+</li>
+</ul>
+<a name="OPTIONS">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>OPTIONS</h4>
+<pre>public static final&nbsp;<a href="../../../com/decoded/stereohttp/RequestMethod.html" title="enum in com.decoded.stereohttp">RequestMethod</a> OPTIONS</pre>
 </li>
 </ul>
 </li>
@@ -328,6 +356,15 @@ not permitted.)</div>
 <dd><code>java.lang.IllegalArgumentException</code> - if this enum type has no constant with the specified name</dd>
 <dd><code>java.lang.NullPointerException</code> - if the argument is null</dd>
 </dl>
+</li>
+</ul>
+<a name="isWriteMethod-com.decoded.stereohttp.RequestMethod-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>isWriteMethod</h4>
+<pre>public static&nbsp;boolean&nbsp;isWriteMethod(<a href="../../../com/decoded/stereohttp/RequestMethod.html" title="enum in com.decoded.stereohttp">RequestMethod</a>&nbsp;method)</pre>
 </li>
 </ul>
 <a name="methodName--">

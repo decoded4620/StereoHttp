@@ -6,9 +6,11 @@ import org.apache.http.HttpHost;
 import org.apache.http.client.protocol.RequestAcceptEncoding;
 import org.apache.http.client.protocol.RequestDefaultHeaders;
 import org.apache.http.config.ConnectionConfig;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.nio.DefaultHttpClientIODispatch;
 import org.apache.http.impl.nio.pool.BasicNIOConnPool;
 import org.apache.http.impl.nio.reactor.DefaultConnectingIOReactor;
+import org.apache.http.message.BasicHttpEntityEnclosingRequest;
 import org.apache.http.message.BasicHttpRequest;
 import org.apache.http.nio.protocol.HttpAsyncRequestExecutor;
 import org.apache.http.nio.protocol.HttpAsyncRequester;
@@ -21,10 +23,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.UnsupportedEncodingException;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -40,7 +40,7 @@ import java.util.function.Supplier;
  * <pre>
  * StereoHttpClient stereoHttpClient;
  *
- * this.stereoHttpClient.httpQuery("ec2-18-188-69-78.us-east-2.compute.amazonaws.com", 9000, RequestMethod.GET,
+ * this.stereoHttpClient.stereoReadRequest("ec2-18-188-69-78.us-east-2.compute.amazonaws.com", 9000, RequestMethod.GET,
  * "/api/identity/users/get?urn=urn:yourdomain:user:1 23", request -&lt; {
  *         request.map(stereoResponse -&lt; stereoResponse.getMaybeContent()
  *             .ifPresent(content -&lt; LOG.info("Stereo Response Content: " + content)))
@@ -85,6 +85,7 @@ public class StereoHttpClient {
 
   /**
    * Set the NIO client outbound connection maximum
+   *
    * @param maxOutboundConnections the max connections for simultaneous outbound connections
    */
   public void setMaxOutboundConnections(int maxOutboundConnections) {
@@ -93,6 +94,7 @@ public class StereoHttpClient {
 
   /**
    * The max output connections per route
+   *
    * @param maxOutboundConnectionsPerRoute the max connections per route.
    */
   public void setMaxOutboundConnectionsPerRoute(int maxOutboundConnectionsPerRoute) {
@@ -119,17 +121,17 @@ public class StereoHttpClient {
       // TODO - @barcher decide which request elements are important.
       // Create HTTP requester
       this.requester = new HttpAsyncRequester(HttpProcessorBuilder.create()
-                                                  .add(new RequestContent())
-                                                  .add(new RequestAcceptEncoding())
-                                                  .add(new RequestDefaultHeaders())
-                                                  .add(new RequestTargetHost())
-                                                  .add(new RequestConnControl())
-                                                  .add(new RequestUserAgent(UserAgents.LINUX_JAVA))
-                                                  .add(new RequestExpectContinue(true))
-                                                  .build());
+          .add(new RequestContent())
+          .add(new RequestAcceptEncoding())
+          .add(new RequestDefaultHeaders())
+          .add(new RequestTargetHost())
+          .add(new RequestConnControl())
+          .add(new RequestUserAgent(UserAgents.LINUX_JAVA))
+          .add(new RequestExpectContinue(true))
+          .build());
 
       this.ioEventDispatch = new DefaultHttpClientIODispatch<>(new HttpAsyncRequestExecutor(),
-                                                               ConnectionConfig.DEFAULT);
+          ConnectionConfig.DEFAULT);
       try {
         this.ioReactor = new DefaultConnectingIOReactor();
       } catch (IOReactorException ex) {
@@ -161,8 +163,8 @@ public class StereoHttpClient {
   /**
    * Set the state of the client. Restricted to a Deterministic Finite State Machine.
    * <p>
-   * Rules: The State Machine can pass from nodes on the left to nodes on the right. The state begins as "Offline" and can
-   * move through the state machine in the following way:
+   * Rules: The State Machine can pass from nodes on the left to nodes on the right. The state begins as "Offline" and
+   * can move through the state machine in the following way:
    * <pre>
    * OFFLINE -&gt; STARTING
    * STARTING -&gt; ONLINE
@@ -183,7 +185,8 @@ public class StereoHttpClient {
             this.state = state;
           } else {
             throw new IllegalArgumentException(
-                "Client current state expected to be " + ClientState.TERMINATED + " or " + ClientState.ERROR + " but was: " + getState());
+                "Client current state expected to be " + ClientState.TERMINATED + " or " + ClientState.ERROR + " but "
+                    + "was: " + getState());
           }
           break;
         case ERROR:
@@ -192,17 +195,16 @@ public class StereoHttpClient {
             this.state = state;
           } else {
             throw new IllegalArgumentException(
-                "Client current state expected to be " + ClientState.STARTING + " or " + ClientState.ONLINE + " but " +
-                    "was: " + getState());
+                "Client current state expected to be " + ClientState.STARTING + " or " + ClientState.ONLINE + " but " + "was: " + getState());
           }
           break;
         case ONLINE:
           if (getState() == ClientState.STARTING) {
             this.state = state;
             // create the outgoing requests for all schemes.
-            // call the request consumer for each caller to query to satisfy the created request.
+            // call the request consumer for each caller to read to satisfy the created request.
             pendingRequestsByScheme.forEach((scheme, requests) -> requests.forEach(
-                request -> request.requestConsumer.accept(nioRequest(request.host, request.request))));
+                request -> request.requestConsumer.accept(newStereoRequest(request.host, request.request))));
             pendingRequestsByScheme.clear();
           } else {
             throw new IllegalArgumentException(
@@ -228,7 +230,7 @@ public class StereoHttpClient {
             this.state = state;
           } else {
             throw new IllegalArgumentException(
-                "Client current state expected to be " + ClientState.STARTING + " or " + ClientState.ONLINE + " but was: " + getState());
+                "Client current state expected to be " + ClientState.STARTING + " or " + ClientState.ONLINE + " but " + "was: " + getState());
           }
 
         case TERMINATED:
@@ -266,6 +268,7 @@ public class StereoHttpClient {
 
   /**
    * Returns true if the http client can be started.
+   *
    * @return a boolean
    */
   public boolean canStart() {
@@ -301,120 +304,164 @@ public class StereoHttpClient {
   }
 
   /**
-   * Perform a query with host and request
+   * Perform a read with host and request
    *
    * @param httpHost the host.
    * @param request  the request.
    */
-  /* package private */ StereoHttpRequest nioRequest(HttpHost httpHost, BasicHttpRequest request) {
+  /* package private */ StereoHttpRequest newStereoRequest(HttpHost httpHost, BasicHttpRequest request) {
     return new StereoHttpRequest(pool, requester, httpHost, request).execute();
+  }
+
+  /**
+   * Handles outgoing requests.
+   *
+   * @param scheme          the scheme
+   * @param host            the host
+   * @param port            the port
+   * @param request         the request
+   * @param stereoRequestCreateCallback the consumer of the new generated request.
+   */
+  private void handleOutgoingRequest(Http.Scheme scheme,
+      String host,
+      int port,
+      BasicHttpRequest request,
+      Consumer<StereoHttpRequest> stereoRequestCreateCallback) {
+    debugIf(() -> "handling outgoing request: " + request.getRequestLine()
+        .getMethod() + " " + host + ":" + port + request.getRequestLine().getUri());
+    final HttpHost httpHost = new HttpHost(host, port, scheme.getProtocol());
+
+    if (this.state == ClientState.ONLINE) {
+      debugIf(() -> "Stereo is building an NIO request");
+      stereoRequestCreateCallback.accept(newStereoRequest(httpHost, request));
+    } else if (getState() == ClientState.OFFLINE || getState() == ClientState.STARTING) {
+      LOG.warn("Stereo is offline! Staging request " + request.getRequestLine().getUri());
+      pendingRequestsByScheme.computeIfAbsent(scheme, s -> new ArrayList<>())
+          .add(new PendingRequest(httpHost, request, stereoRequestCreateCallback));
+    } else {
+      throw new IllegalStateException("Cannot invoke read on client when state is: " + this.state);
+    }
+  }
+
+  /**
+   * Write data in a request, using entities
+   *
+   * @param scheme                   the scheme to write
+   * @param restRequest              the rest request.
+   * @param requestConsumer          the consumer
+   * @param serializedEntitySupplier the serialized entity supplier.
+   */
+  private void write(Http.Scheme scheme,
+      RestRequest restRequest,
+      Consumer<StereoHttpRequest> requestConsumer,
+      Supplier<String> serializedEntitySupplier) {
+    String host = restRequest.getHost();
+    int port = restRequest.getPort();
+    RequestMethod method = restRequest.getRequestMethod();
+    String uri = restRequest.getRequestUri();
+
+
+    if (method.equals(RequestMethod.CREATE) || method.equals(RequestMethod.PUT) || method.equals(RequestMethod.POST)) {
+      BasicHttpEntityEnclosingRequest httpRequest = new BasicHttpEntityEnclosingRequest(method.methodName(), uri);
+
+      Map<String, String> headers = restRequest.getHeaders();
+      headers.forEach(httpRequest::addHeader);
+
+      Optional.ofNullable(serializedEntitySupplier.get()).ifPresent(serializedEntity -> {
+        try {
+          if (serializedEntitySupplier.get() == null) {
+            httpRequest.setEntity(new StringEntity(""));
+          } else {
+            httpRequest.setEntity(new StringEntity(serializedEntitySupplier.get()));
+          }
+
+        } catch (UnsupportedEncodingException ex) {
+          LOG.info("Not supported!");
+        }
+      });
+
+      handleOutgoingRequest(scheme, host, port, httpRequest, requestConsumer);
+    } else {
+      LOG.error("Request Method " + method.name() + " is not a write method!");
+    }
   }
 
   /**
    * Build a Stereo Http RestRequest
    *
+   * @param restRequest     the request
    * @param scheme          the scheme
-   * @param host            the host
-   * @param port            the port
-   * @param method          the request method
-   * @param uri             the uri
    * @param requestConsumer a consumer for the constructed request.
    */
-  private void query(Http.Scheme scheme,
-                     String host,
-                     int port,
-                     RequestMethod method,
-                     String uri,
-                     Consumer<StereoHttpRequest> requestConsumer
-  ) {
-    debugIf(() -> "Query: " + method.name() + " - " + scheme + "://" + host + ':' + port + uri);
-    final HttpHost httpHost = new HttpHost(host, port, scheme.getProtocol());
-    final BasicHttpRequest request = new BasicHttpRequest(method.methodName(), uri);
-    if (this.state == ClientState.ONLINE) {
-      requestConsumer.accept(nioRequest(httpHost, request));
-    } else if (getState() == ClientState.OFFLINE || getState() == ClientState.STARTING) {
-      pendingRequestsByScheme.computeIfAbsent(scheme, s -> new ArrayList<>())
-          .add(new PendingRequest(httpHost, request, requestConsumer));
+  private void read(Http.Scheme scheme,
+      RestRequest restRequest,
+      Consumer<StereoHttpRequest> requestConsumer) {
+
+    debugIf(() -> "Capturing outgoing request >> " + restRequest.getRequestMethod()
+        .name() + " " + scheme + "://" + restRequest.getHost() + ':' + restRequest.getPort() + restRequest.getRequestUri());
+    final BasicHttpRequest request = new BasicHttpRequest(restRequest.getRequestMethod().methodName(),
+        restRequest.getRequestUri());
+
+    Map<String, String> headers = restRequest.getHeaders();
+    headers.forEach(request::addHeader);
+
+    if (!RequestMethod.isWriteMethod(restRequest.getRequestMethod())) {
+      handleOutgoingRequest(scheme, restRequest.getHost(), restRequest.getPort(), request, requestConsumer);
     } else {
-      throw new IllegalStateException("Cannot invoke query on client when state is: " + this.state);
+      LOG.error("Request method " + restRequest.getRequestMethod().name() + " is a write request");
     }
   }
 
   /**
-   * Http Immutable query object used to handled non-blocking io
+   * Http Immutable read object used to handled non-blocking io
    *
-   * @param host            the host, e.g. www.milli.com
-   * @param port            the port, e.g. 8080
-   * @param requestMethod   the method, e.g. GET
-   * @param uri             the uri, e.g. /login
-   * @param requestConsumer consumer for the created request.
+   * @param restRequest           the request
+   * @param stereoRequestConsumer consumer for the created request.
    */
-  public void httpQuery(String host,
-                        int port,
-                        RequestMethod requestMethod,
-                        String uri,
-                        Consumer<StereoHttpRequest> requestConsumer
-  ) {
-    debugIf(() -> ">> httpQuery: " + host + ":" + port + uri);
-    query(Http.Scheme.HTTP, host, port, requestMethod, uri, requestConsumer);
+  public void stereoReadRequest(RestRequest restRequest, Consumer<StereoHttpRequest> stereoRequestConsumer) {
+    read(Http.Scheme.HTTP, restRequest, stereoRequestConsumer);
   }
 
   /**
-   * Https Immutable query object used to handled non-blocking io
+   * Write to a host
    *
-   * @param host            the host, e.g. www.milli.com
-   * @param port            the port, e.g. 8080
-   * @param method          the method, e.g. GET
-   * @param uri             the uri, e.g. /login
+   * @param restRequest              a rest request.
+   * @param requestConsumer          consumer for the created request.
+   * @param serializedEntitySupplier the entity data to write.
+   *
+   * @see StereoHttpClient#stereoReadRequest(RestRequest, Consumer)
+   */
+  public void stereoWriteRequest(RestRequest restRequest,
+      Consumer<StereoHttpRequest> requestConsumer,
+      Supplier<String> serializedEntitySupplier) {
+    write(Http.Scheme.HTTP, restRequest, requestConsumer, serializedEntitySupplier);
+  }
+
+  /**
+   * Https Immutable read object used to handled non-blocking io
+   *
    * @param requestConsumer a consumer of the created request.
    */
-  public void httpsQuery(String host,
-                         int port,
-                         RequestMethod method,
-                         String uri,
-                         Consumer<StereoHttpRequest> requestConsumer
-  ) {
-    query(Http.Scheme.HTTPS, host, port, method, uri, requestConsumer);
+  public void stereoSecureRead(RestRequest restRequest, Consumer<StereoHttpRequest> requestConsumer) {
+    read(Http.Scheme.HTTPS, restRequest, requestConsumer);
   }
 
   /**
-   * SSH Immutable query
+   * Https Immutable read object used to handled non-blocking io
    *
-   * @param host            the ssh host
-   * @param method          the request method
-   * @param uri             the ssh uri
-   * @param requestConsumer the consumer for the created request.
+   * @param restRequest     request
+   * @param requestConsumer a consumer of the created request.
    */
-  public void sshQuery(String host, RequestMethod method, String uri, Consumer<StereoHttpRequest> requestConsumer) {
-    query(Http.Scheme.SSH, host, Http.Scheme.SSH.getDefaultPort(), method, uri, requestConsumer);
+  public void stereoSecureWrite(RestRequest restRequest,
+      Consumer<StereoHttpRequest> requestConsumer,
+      Supplier<String> serializedEntitySupplier) {
+    write(Http.Scheme.HTTPS, restRequest, requestConsumer, serializedEntitySupplier);
   }
 
-  /**
-   * FTP Immutable query
-   *
-   * @param host            the ssh host
-   * @param method          the request method
-   * @param uri             the ssh uri
-   * @param requestConsumer the consumer for the created request.
-   */
-  public void ftpQuery(String host, RequestMethod method, String uri, Consumer<StereoHttpRequest> requestConsumer) {
-    query(Http.Scheme.FTP, host, Http.Scheme.FTP.getDefaultPort(), method, uri, requestConsumer);
-  }
-
-  /**
-   * SFTP Immutable query
-   *
-   * @param host            the ssh host
-   * @param method          the request method
-   * @param uri             the ssh uri
-   * @param requestConsumer the consumer for the created request.
-   */
-  public void sftpQuery(String host, RequestMethod method, String uri, Consumer<StereoHttpRequest> requestConsumer) {
-    query(Http.Scheme.SFTP, host, Http.Scheme.SFTP.getDefaultPort(), method, uri, requestConsumer);
-  }
 
   /**
    * States that the client can be in. Following the state machine rules stated in the class docs.
+   *
    * @see StereoHttpClient#setState(ClientState)
    */
   public enum ClientState {

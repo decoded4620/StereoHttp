@@ -8,10 +8,7 @@ import org.slf4j.LoggerFactory;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 
 /**
@@ -25,10 +22,11 @@ public class RestRequest<T, ID_T> {
   private final String host;
   private final int port;
   private final RequestMethod requestMethod;
+  private final String body;
   private final String requestPath;
   private final Set<ID_T> identifiers;
   private final List<Pair<String, String>> requestParams;
-
+  private final Map<String, String> headers;
   /**
    * Constructor
    *
@@ -36,8 +34,10 @@ public class RestRequest<T, ID_T> {
    */
   public RestRequest(Builder<T, ID_T> builder) {
     identifiers = builder.identifiers;
+    headers = builder.headers;
     host = builder.host;
     port = builder.port;
+    body = builder.body;
     requestMethod = builder.requestMethod;
     requestPath = builder.requestPath;
     requestParams = builder.requestParams;
@@ -101,6 +101,14 @@ public class RestRequest<T, ID_T> {
   }
 
   /**
+   * Returns the body of the request.
+   * @return a String.
+   */
+  public String getBody() {
+    return body;
+  }
+
+  /**
    * The Host.
    *
    * @return a String.
@@ -119,6 +127,14 @@ public class RestRequest<T, ID_T> {
   }
 
   /**
+   * the headers
+   * @return map of headers.
+   */
+  public Map<String, String> getHeaders() {
+    return headers;
+  }
+
+  /**
    * The Request Identifiers.
    *
    * @return a set of one or more identifiers used to identify a rest resource entity
@@ -134,9 +150,11 @@ public class RestRequest<T, ID_T> {
    */
   public static class Builder<T, ID_T> {
     private String host;
+    private String body;
     private int port;
     private String requestPath;
     private List<Pair<String, String>> requestParams = Collections.emptyList();
+    private Map<String, String> headers = Collections.emptyMap();
     private RequestMethod requestMethod = RequestMethod.GET;
     private Set<ID_T> identifiers = Collections.emptySet();
     private Class<T> tClass;
@@ -147,6 +165,11 @@ public class RestRequest<T, ID_T> {
       this.idClass = idClazz;
     }
 
+    public Builder<T, ID_T> setBody(final String body) {
+      this.body = body;
+      return this;
+    }
+
     public Builder<T, ID_T> setHost(String host) {
       this.host = host;
       return this;
@@ -154,6 +177,11 @@ public class RestRequest<T, ID_T> {
 
     public Builder<T, ID_T> setRequestParams(List<Pair<String, String>> requestParams) {
       this.requestParams = requestParams;
+      return this;
+    }
+
+    public Builder<T, ID_T> setHeaders(final Map<String, String> headers) {
+      this.headers = headers;
       return this;
     }
 

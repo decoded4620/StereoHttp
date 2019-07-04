@@ -104,6 +104,10 @@
 </dd>
 <dt><a href="com/decoded/stereohttp/package-summary.html">com.decoded.stereohttp</a> - package com.decoded.stereohttp</dt>
 <dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/stereohttp/StereoHttpTask.html#concurrentRequests--">concurrentRequests()</a></span> - Static method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/StereoHttpTask.html" title="class in com.decoded.stereohttp">StereoHttpTask</a></dt>
+<dd>
+<div class="block">Total number of concurrent requests in progress right now.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/Feedback.html#countDown--">countDown()</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/Feedback.html" title="class in com.decoded.stereohttp">Feedback</a></dt>
 <dd>&nbsp;</dd>
 </dl>
@@ -122,7 +126,9 @@
 <div class="block">Execute the restRequest.</div>
 </dd>
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/StereoHttpTask.html#executeBatch-com.fasterxml.jackson.core.type.TypeReference-com.decoded.stereohttp.RestRequest-">executeBatch(TypeReference, RestRequest&lt;List&lt;T&gt;, ID_T&gt;)</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/StereoHttpTask.html" title="class in com.decoded.stereohttp">StereoHttpTask</a></dt>
-<dd>&nbsp;</dd>
+<dd>
+<div class="block">Execute a batch request.</div>
+</dd>
 </dl>
 <a name="I:F">
 <!--   -->
@@ -138,17 +144,19 @@
 </dd>
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/Feedback.html#Feedback--">Feedback()</a></span> - Constructor for class com.decoded.stereohttp.<a href="com/decoded/stereohttp/Feedback.html" title="class in com.decoded.stereohttp">Feedback</a></dt>
 <dd>&nbsp;</dd>
-<dt><span class="memberNameLink"><a href="com/decoded/stereohttp/StereoHttpClient.html#ftpQuery-java.lang.String-com.decoded.stereohttp.RequestMethod-java.lang.String-java.util.function.Consumer-">ftpQuery(String, RequestMethod, String, Consumer&lt;StereoHttpRequest&gt;)</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/StereoHttpClient.html" title="class in com.decoded.stereohttp">StereoHttpClient</a></dt>
-<dd>
-<div class="block">FTP Immutable query</div>
-</dd>
 </dl>
 <a name="I:G">
 <!--   -->
 </a>
 <h2 class="title">G</h2>
 <dl>
+<dt><span class="memberNameLink"><a href="com/decoded/stereohttp/RestRequest.html#getBody--">getBody()</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/RestRequest.html" title="class in com.decoded.stereohttp">RestRequest</a></dt>
+<dd>
+<div class="block">Returns the body of the request.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/StereoRequestException.html#getCode--">getCode()</a></span> - Method in exception com.decoded.stereohttp.<a href="com/decoded/stereohttp/StereoRequestException.html" title="class in com.decoded.stereohttp">StereoRequestException</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/stereohttp/StereoResponseException.html#getCode--">getCode()</a></span> - Method in exception com.decoded.stereohttp.<a href="com/decoded/stereohttp/StereoResponseException.html" title="class in com.decoded.stereohttp">StereoResponseException</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/StereoResponse.html#getContent--">getContent()</a></span> - Method in interface com.decoded.stereohttp.<a href="com/decoded/stereohttp/StereoResponse.html" title="interface in com.decoded.stereohttp">StereoResponse</a></dt>
 <dd>
@@ -183,6 +191,10 @@
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/StereoHttpClient.html#getExecutorService--">getExecutorService()</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/StereoHttpClient.html" title="class in com.decoded.stereohttp">StereoHttpClient</a></dt>
 <dd>
 <div class="block">Returns the executor service that delves out the threads for http requests.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/stereohttp/RestRequest.html#getHeaders--">getHeaders()</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/RestRequest.html" title="class in com.decoded.stereohttp">RestRequest</a></dt>
+<dd>
+<div class="block">the headers</div>
 </dd>
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/RestRequest.html#getHost--">getHost()</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/RestRequest.html" title="class in com.decoded.stereohttp">RestRequest</a></dt>
 <dd>
@@ -266,14 +278,6 @@
 <dd>
 <div class="block">Schemes for calling remote hosts with default ports</div>
 </dd>
-<dt><span class="memberNameLink"><a href="com/decoded/stereohttp/StereoHttpClient.html#httpQuery-java.lang.String-int-com.decoded.stereohttp.RequestMethod-java.lang.String-java.util.function.Consumer-">httpQuery(String, int, RequestMethod, String, Consumer&lt;StereoHttpRequest&gt;)</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/StereoHttpClient.html" title="class in com.decoded.stereohttp">StereoHttpClient</a></dt>
-<dd>
-<div class="block">Http Immutable query object used to handled non-blocking io</div>
-</dd>
-<dt><span class="memberNameLink"><a href="com/decoded/stereohttp/StereoHttpClient.html#httpsQuery-java.lang.String-int-com.decoded.stereohttp.RequestMethod-java.lang.String-java.util.function.Consumer-">httpsQuery(String, int, RequestMethod, String, Consumer&lt;StereoHttpRequest&gt;)</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/StereoHttpClient.html" title="class in com.decoded.stereohttp">StereoHttpClient</a></dt>
-<dd>
-<div class="block">Https Immutable query object used to handled non-blocking io</div>
-</dd>
 </dl>
 <a name="I:I">
 <!--   -->
@@ -305,6 +309,8 @@
 </dd>
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/StereoResponseImpl.html#isStreaming--">isStreaming()</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/StereoResponseImpl.html" title="class in com.decoded.stereohttp">StereoResponseImpl</a></dt>
 <dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/stereohttp/RequestMethod.html#isWriteMethod-com.decoded.stereohttp.RequestMethod-">isWriteMethod(RequestMethod)</a></span> - Static method in enum com.decoded.stereohttp.<a href="com/decoded/stereohttp/RequestMethod.html" title="enum in com.decoded.stereohttp">RequestMethod</a></dt>
+<dd>&nbsp;</dd>
 </dl>
 <a name="I:L">
 <!--   -->
@@ -326,12 +332,20 @@
 <div class="block">When the response is available, if the completion mapper is set
  it will be called with the response.</div>
 </dd>
+<dt><span class="memberNameLink"><a href="com/decoded/stereohttp/StereoHttpTask.html#maxConcurrentRequests--">maxConcurrentRequests()</a></span> - Static method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/StereoHttpTask.html" title="class in com.decoded.stereohttp">StereoHttpTask</a></dt>
+<dd>
+<div class="block">The maximum value of concurrency in this client.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/StereoHttpTask.html#maxLatency--">maxLatency()</a></span> - Static method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/StereoHttpTask.html" title="class in com.decoded.stereohttp">StereoHttpTask</a></dt>
-<dd>&nbsp;</dd>
+<dd>
+<div class="block">Maximum latency incurred by a request</div>
+</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/RequestMethod.html#methodName--">methodName()</a></span> - Method in enum com.decoded.stereohttp.<a href="com/decoded/stereohttp/RequestMethod.html" title="enum in com.decoded.stereohttp">RequestMethod</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/StereoHttpTask.html#minLatency--">minLatency()</a></span> - Static method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/StereoHttpTask.html" title="class in com.decoded.stereohttp">StereoHttpTask</a></dt>
-<dd>&nbsp;</dd>
+<dd>
+<div class="block">Minimum latency incurred by a request</div>
+</dd>
 </dl>
 <a name="I:R">
 <!--   -->
@@ -340,7 +354,7 @@
 <dl>
 <dt><a href="com/decoded/stereohttp/RequestMethod.html" title="enum in com.decoded.stereohttp"><span class="typeNameLink">RequestMethod</span></a> - Enum in <a href="com/decoded/stereohttp/package-summary.html">com.decoded.stereohttp</a></dt>
 <dd>
-<div class="block">Http RestRequest Methods</div>
+<div class="block">Http RestRequest Methods for http 1.1</div>
 </dd>
 <dt><a href="com/decoded/stereohttp/RestRequest.html" title="class in com.decoded.stereohttp"><span class="typeNameLink">RestRequest</span></a>&lt;<a href="com/decoded/stereohttp/RestRequest.html" title="type parameter in RestRequest">T</a>,<a href="com/decoded/stereohttp/RestRequest.html" title="type parameter in RestRequest">ID_T</a>&gt; - Class in <a href="com/decoded/stereohttp/package-summary.html">com.decoded.stereohttp</a></dt>
 <dd>
@@ -360,7 +374,11 @@
 </a>
 <h2 class="title">S</h2>
 <dl>
+<dt><span class="memberNameLink"><a href="com/decoded/stereohttp/RestRequest.Builder.html#setBody-java.lang.String-">setBody(String)</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a></dt>
+<dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/Feedback.html#setError-int-java.lang.String-java.lang.Throwable-">setError(int, String, Throwable)</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/Feedback.html" title="class in com.decoded.stereohttp">Feedback</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/stereohttp/RestRequest.Builder.html#setHeaders-java.util.Map-">setHeaders(Map&lt;String, String&gt;)</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/RestRequest.Builder.html#setHost-java.lang.String-">setHost(String)</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a></dt>
 <dd>&nbsp;</dd>
@@ -394,14 +412,6 @@
 </dd>
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/Feedback.html#setSuccess-int-T-java.lang.String-">setSuccess(int, T, String)</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/Feedback.html" title="class in com.decoded.stereohttp">Feedback</a></dt>
 <dd>&nbsp;</dd>
-<dt><span class="memberNameLink"><a href="com/decoded/stereohttp/StereoHttpClient.html#sftpQuery-java.lang.String-com.decoded.stereohttp.RequestMethod-java.lang.String-java.util.function.Consumer-">sftpQuery(String, RequestMethod, String, Consumer&lt;StereoHttpRequest&gt;)</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/StereoHttpClient.html" title="class in com.decoded.stereohttp">StereoHttpClient</a></dt>
-<dd>
-<div class="block">SFTP Immutable query</div>
-</dd>
-<dt><span class="memberNameLink"><a href="com/decoded/stereohttp/StereoHttpClient.html#sshQuery-java.lang.String-com.decoded.stereohttp.RequestMethod-java.lang.String-java.util.function.Consumer-">sshQuery(String, RequestMethod, String, Consumer&lt;StereoHttpRequest&gt;)</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/StereoHttpClient.html" title="class in com.decoded.stereohttp">StereoHttpClient</a></dt>
-<dd>
-<div class="block">SSH Immutable query</div>
-</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/StereoHttpClient.html#start--">start()</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/StereoHttpClient.html" title="class in com.decoded.stereohttp">StereoHttpClient</a></dt>
 <dd>
 <div class="block">Start the non-blocking client on our executor thread.</div>
@@ -429,6 +439,10 @@
 <dd>
 <div class="block">StereoHttpTask</div>
 </dd>
+<dt><span class="memberNameLink"><a href="com/decoded/stereohttp/StereoHttpClient.html#stereoReadRequest-com.decoded.stereohttp.RestRequest-java.util.function.Consumer-">stereoReadRequest(RestRequest, Consumer&lt;StereoHttpRequest&gt;)</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/StereoHttpClient.html" title="class in com.decoded.stereohttp">StereoHttpClient</a></dt>
+<dd>
+<div class="block">Http Immutable read object used to handled non-blocking io</div>
+</dd>
 <dt><a href="com/decoded/stereohttp/StereoRequestException.html" title="class in com.decoded.stereohttp"><span class="typeNameLink">StereoRequestException</span></a> - Exception in <a href="com/decoded/stereohttp/package-summary.html">com.decoded.stereohttp</a></dt>
 <dd>
 <div class="block">Request Exceptions, with codes.</div>
@@ -441,9 +455,27 @@
 <dd>
 <div class="block">response interface for interacting with Http Response content.</div>
 </dd>
+<dt><a href="com/decoded/stereohttp/StereoResponseException.html" title="class in com.decoded.stereohttp"><span class="typeNameLink">StereoResponseException</span></a> - Exception in <a href="com/decoded/stereohttp/package-summary.html">com.decoded.stereohttp</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/stereohttp/StereoResponseException.html#StereoResponseException-int-java.lang.String-">StereoResponseException(int, String)</a></span> - Constructor for exception com.decoded.stereohttp.<a href="com/decoded/stereohttp/StereoResponseException.html" title="class in com.decoded.stereohttp">StereoResponseException</a></dt>
+<dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/stereohttp/StereoResponseException.html#StereoResponseException-int-java.lang.String-java.lang.Throwable-">StereoResponseException(int, String, Throwable)</a></span> - Constructor for exception com.decoded.stereohttp.<a href="com/decoded/stereohttp/StereoResponseException.html" title="class in com.decoded.stereohttp">StereoResponseException</a></dt>
+<dd>&nbsp;</dd>
 <dt><a href="com/decoded/stereohttp/StereoResponseImpl.html" title="class in com.decoded.stereohttp"><span class="typeNameLink">StereoResponseImpl</span></a> - Class in <a href="com/decoded/stereohttp/package-summary.html">com.decoded.stereohttp</a></dt>
 <dd>
 <div class="block">The HttpResponseWrapper for Apache</div>
+</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/stereohttp/StereoHttpClient.html#stereoSecureRead-com.decoded.stereohttp.RestRequest-java.util.function.Consumer-">stereoSecureRead(RestRequest, Consumer&lt;StereoHttpRequest&gt;)</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/StereoHttpClient.html" title="class in com.decoded.stereohttp">StereoHttpClient</a></dt>
+<dd>
+<div class="block">Https Immutable read object used to handled non-blocking io</div>
+</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/stereohttp/StereoHttpClient.html#stereoSecureWrite-com.decoded.stereohttp.RestRequest-java.util.function.Consumer-java.util.function.Supplier-">stereoSecureWrite(RestRequest, Consumer&lt;StereoHttpRequest&gt;, Supplier&lt;String&gt;)</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/StereoHttpClient.html" title="class in com.decoded.stereohttp">StereoHttpClient</a></dt>
+<dd>
+<div class="block">Https Immutable read object used to handled non-blocking io</div>
+</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/stereohttp/StereoHttpClient.html#stereoWriteRequest-com.decoded.stereohttp.RestRequest-java.util.function.Consumer-java.util.function.Supplier-">stereoWriteRequest(RestRequest, Consumer&lt;StereoHttpRequest&gt;, Supplier&lt;String&gt;)</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/StereoHttpClient.html" title="class in com.decoded.stereohttp">StereoHttpClient</a></dt>
+<dd>
+<div class="block">Write to a host</div>
 </dd>
 </dl>
 <a name="I:T">
@@ -454,6 +486,10 @@
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/StereoHttpClient.html#terminate--">terminate()</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/StereoHttpClient.html" title="class in com.decoded.stereohttp">StereoHttpClient</a></dt>
 <dd>
 <div class="block">Terminate the client.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/stereohttp/StereoHttpTask.html#totalRequests--">totalRequests()</a></span> - Static method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/StereoHttpTask.html" title="class in com.decoded.stereohttp">StereoHttpTask</a></dt>
+<dd>
+<div class="block">Total requests that have been processed by <a href="com/decoded/stereohttp/StereoHttpTask.html" title="class in com.decoded.stereohttp"><code>StereoHttpTask</code></a></div>
 </dd>
 </dl>
 <a name="I:U">
