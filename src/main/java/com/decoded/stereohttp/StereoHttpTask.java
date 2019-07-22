@@ -7,8 +7,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.ConnectException;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -42,6 +45,7 @@ public class StereoHttpTask<T> {
 
   private final StereoHttpClient stereoHttpClient;
   private final int timeout;
+  private Map<Integer, Integer> statusRetries = new ConcurrentHashMap<>();
 
   /**
    * StereoHttpTask
@@ -109,6 +113,7 @@ public class StereoHttpTask<T> {
   /**
    * Execute the restRequest.
    *
+   * @param type the class for the type of response that is being returned by this class. (unserialized type).
    * @param request the restRequest
    * @param <ID_T>  the identifier type for the request. Used as a pass through here.
    *
@@ -135,16 +140,14 @@ public class StereoHttpTask<T> {
 
   private void setFeedbackResponseError(Feedback feedback, int status, String content, String message) {
     LOG.info("Http Response Feedback Error: " + status + " -> " + message);
-    feedback.setError(status, content,
-        new StereoResponseException(status,
-            message));
+    feedback.setError(status, content, new StereoResponseException(status, message));
   }
+
   private void setFeedbackRequestError(Feedback feedback, int status, String content, String message) {
     LOG.info("Http Request Feedback Error: " + status + " -> " + message);
-    feedback.setError(status, content,
-        new StereoRequestException(status,
-            message));
+    feedback.setError(status, content, new StereoRequestException(status, message));
   }
+
   /**
    * Process the error type feedback
    *
@@ -152,7 +155,7 @@ public class StereoHttpTask<T> {
    * @param feedback   the feedback
    * @param statusCode the status
    * @param response   the response
-   * @param message
+   * @param message the error message
    */
   private <X> void setFeedbackResponseError(Feedback<X> feedback,
       int statusCode,
@@ -163,6 +166,7 @@ public class StereoHttpTask<T> {
     feedback.setError(statusCode, response == null ? "" : response.getContent(),
         new StereoResponseException(statusCode, message, cause));
   }
+
   /**
    * Process the error type feedback
    *
@@ -170,7 +174,7 @@ public class StereoHttpTask<T> {
    * @param feedback   the feedback
    * @param statusCode the status
    * @param response   the response
-   * @param message
+   * @param message    the message
    */
   private <X> void setFeedbackRequestError(Feedback<X> feedback,
       int statusCode,
@@ -198,7 +202,7 @@ public class StereoHttpTask<T> {
       TypeReference<X> typeReference,
       StereoResponse response) {
     debugIf(() -> "Process ok response feedback: " + statusCode);
-    if(response == null) {
+    if (response == null) {
       setFeedbackResponseError(feedback, HttpStatus.SC_INTERNAL_SERVER_ERROR, "",
           "No Stereo Response was provided for processing!");
     } else {
@@ -221,7 +225,9 @@ public class StereoHttpTask<T> {
           }
         }
       } else {
-        debugIf(() -> "Successfully processed feedback response:" + response.getRawHttpResponse().getStatusLine().toString());
+        debugIf(() -> "Successfully processed feedback response:" + response.getRawHttpResponse()
+            .getStatusLine()
+            .toString());
         feedback.setSuccess(statusCode, null, response.getContent());
       }
     }
@@ -267,6 +273,14 @@ public class StereoHttpTask<T> {
     TOTAL_REQUESTS.incrementAndGet();
   }
 
+  private boolean is2xxStatusCode(int statusCode) {
+    return statusCode >= 200 && statusCode < 300;
+  }
+
+  private boolean isErrorCode(int statusCode) {
+    return !is2xxStatusCode(statusCode) && statusCode >= 400 && statusCode < 600;
+  }
+
   /**
    * Internal method to run the request.
    *
@@ -287,42 +301,20 @@ public class StereoHttpTask<T> {
 
       debugIf(() -> "Stereo Request Enqueue: [" + httpRequest.getRequestUri() + "]");
 
+      // response callback
       Consumer<StereoResponse> httpResponseCallback = (stereoResponse) -> {
         final int statusCode = stereoResponse.getRawHttpResponse().getStatusLine().getStatusCode();
         debugIf(() -> "Http Response captured: " + httpRequest.getRequestUri() + " => " + statusCode);
 
-        switch (statusCode) {
-          // all 2xx
-          case HttpStatus.SC_OK:
-          case HttpStatus.SC_NO_CONTENT:
-          case HttpStatus.SC_ACCEPTED:
-          case HttpStatus.SC_CREATED:
-          case HttpStatus.SC_MULTI_STATUS:
-          case HttpStatus.SC_NON_AUTHORITATIVE_INFORMATION:
-          case HttpStatus.SC_PARTIAL_CONTENT:
-            process2xxResponseFeedback(statusCode, feedback, clazz, typeReference, stereoResponse);
-            break;
-          case HttpStatus.SC_CONTINUE:
-            setFeedbackRequestError(feedback, statusCode, stereoResponse.getContent(),
-                "Continuing: " + statusCode + "->" + httpRequest.getRequestUri());
-            break;
-          case HttpStatus.SC_INTERNAL_SERVER_ERROR:
-            setFeedbackRequestError(feedback, statusCode, stereoResponse.getContent(),
-                "Internal Server Error: " + statusCode + "->" + httpRequest.getRequestUri());
-            break;
-          case HttpStatus.SC_NOT_FOUND:
-            setFeedbackRequestError(feedback, statusCode, stereoResponse.getContent(),
-                "Not Found: " + statusCode + "->" + httpRequest.getRequestUri());
-            break;
-          case HttpStatus.SC_BAD_REQUEST:
-            setFeedbackRequestError(feedback, statusCode, stereoResponse.getContent(),
-                "Bad Request: " + statusCode + "->" + httpRequest.getRequestUri());
-            break;
-          default:
-            setFeedbackRequestError(feedback, statusCode, stereoResponse.getContent(),
-                "Unsupported http status: " + statusCode + "->" + httpRequest.getRequestUri());
-            // HUGE TODO - make sure we support different groups of status types.
-            break;
+        if(is2xxStatusCode(statusCode)) {
+          process2xxResponseFeedback(statusCode, feedback, clazz, typeReference, stereoResponse);
+        } else {
+          if(isErrorCode(statusCode)) {
+            setFeedbackRequestError(feedback, statusCode, stereoResponse.getContent(), "Non 2xx Status: " + statusCode + "->" + httpRequest.getRequestUri());
+          } else {
+            LOG.info("Non Error, Non-2xx status: " + statusCode);
+            feedback.setSuccess(statusCode, null, stereoResponse.getContent());
+          }
         }
       };
 
@@ -334,10 +326,14 @@ public class StereoHttpTask<T> {
               .getStatusCode() + ")]: \n---\n" + response.getContent() + "\n---");
           httpResponseCallback.accept(response);
         }).exceptionally(ex -> {
-          setFeedbackRequestError(feedback, HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "Exception occurred: " , ex);
+          LOG.warn("Stereo Raw Http Request Exception: " + ex.getClass().getName(), ex);
+          if(ex.getCause() instanceof ConnectException) {
+            setFeedbackRequestError(feedback, HttpStatus.SC_FORBIDDEN, null, "Exception occurred: ", ex);
+          } else {
+            setFeedbackRequestError(feedback, HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "Exception occurred: ", ex);
+          }
         }).cancelling(() -> {
-
-          setFeedbackRequestError(feedback, HttpStatus.SC_INTERNAL_SERVER_ERROR, "", "Request was cancelled");
+          debugIf(() -> "Stereo Request Cancelled");
           feedback.cancel();
         });
       };

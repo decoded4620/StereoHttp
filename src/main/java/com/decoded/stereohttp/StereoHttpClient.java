@@ -439,7 +439,7 @@ public class StereoHttpClient {
 
   /**
    * Https Immutable read object used to handled non-blocking io
-   *
+   * @param restRequest the request.
    * @param requestConsumer a consumer of the created request.
    */
   public void stereoSecureRead(RestRequest restRequest, Consumer<StereoHttpRequest> requestConsumer) {
@@ -451,6 +451,7 @@ public class StereoHttpClient {
    *
    * @param restRequest     request
    * @param requestConsumer a consumer of the created request.
+   * @param serializedEntitySupplier the supplier for a serialized result.
    */
   public void stereoSecureWrite(RestRequest restRequest,
       Consumer<StereoHttpRequest> requestConsumer,

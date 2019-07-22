@@ -56,7 +56,7 @@ public class Feedback<T> extends CountDownLatch {
     this.cancelled = true;
     this.serializedContent = "{ \"error\":\"Request cancelled\"}";
 
-    this.status = HttpStatus.SC_NO_CONTENT;
+    this.status = HttpStatus.SC_REQUEST_TIMEOUT;
     countDown();
     return this;
   }
