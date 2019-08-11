@@ -71,6 +71,14 @@
 </a>
 <h2 class="title">A</h2>
 <dl>
+<dt><span class="memberNameLink"><a href="com/decoded/stereohttp/RestRequest.Builder.html#addHeader-java.lang.String-java.lang.String-">addHeader(String, String)</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a></dt>
+<dd>
+<div class="block">Add or overwrite a specified header</div>
+</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/stereohttp/RestRequest.Builder.html#addRequestParam-java.lang.String-java.lang.String-">addRequestParam(String, String)</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a></dt>
+<dd>
+<div class="block">Add a single param to the request params.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/StereoHttpRequest.html#andThen-java.lang.Runnable-">andThen(Runnable)</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp">StereoHttpRequest</a></dt>
 <dd>
 <div class="block">After everything (error or not) do this.</div>
@@ -82,7 +90,9 @@
 <h2 class="title">B</h2>
 <dl>
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/RestRequest.Builder.html#build--">build()</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a></dt>
-<dd>&nbsp;</dd>
+<dd>
+<div class="block">Builds a rest request.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/RestRequest.Builder.html#Builder-java.lang.Class-java.lang.Class-">Builder(Class&lt;T&gt;, Class&lt;ID_T&gt;)</a></span> - Constructor for class com.decoded.stereohttp.<a href="com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a></dt>
 <dd>&nbsp;</dd>
 </dl>
@@ -176,6 +186,10 @@
 </dd>
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/StereoResponseImpl.html#getContentType--">getContentType()</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/StereoResponseImpl.html" title="class in com.decoded.stereohttp">StereoResponseImpl</a></dt>
 <dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/stereohttp/RestRequest.html#getCookies--">getCookies()</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/RestRequest.html" title="class in com.decoded.stereohttp">RestRequest</a></dt>
+<dd>
+<div class="block">Returns the list of cookies.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/Http.Scheme.html#getDefaultPort--">getDefaultPort()</a></span> - Method in enum com.decoded.stereohttp.<a href="com/decoded/stereohttp/Http.Scheme.html" title="enum in com.decoded.stereohttp">Http.Scheme</a></dt>
 <dd>&nbsp;</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/Feedback.html#getDeserializedContent--">getDeserializedContent()</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/Feedback.html" title="class in com.decoded.stereohttp">Feedback</a></dt>
@@ -191,6 +205,10 @@
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/StereoHttpClient.html#getExecutorService--">getExecutorService()</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/StereoHttpClient.html" title="class in com.decoded.stereohttp">StereoHttpClient</a></dt>
 <dd>
 <div class="block">Returns the executor service that delves out the threads for http requests.</div>
+</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/stereohttp/RestRequest.html#getFormData--">getFormData()</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/RestRequest.html" title="class in com.decoded.stereohttp">RestRequest</a></dt>
+<dd>
+<div class="block">Form Data</div>
 </dd>
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/RestRequest.html#getHeaders--">getHeaders()</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/RestRequest.html" title="class in com.decoded.stereohttp">RestRequest</a></dt>
 <dd>
@@ -260,6 +278,10 @@
 </dd>
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/Feedback.html#getStatus--">getStatus()</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/Feedback.html" title="class in com.decoded.stereohttp">Feedback</a></dt>
 <dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/stereohttp/RestRequest.html#getUrlEncodedFormData--">getUrlEncodedFormData()</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/RestRequest.html" title="class in com.decoded.stereohttp">RestRequest</a></dt>
+<dd>
+<div class="block">The form data if the content is url encoded form data.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/Http.Scheme.html#getValue--">getValue()</a></span> - Method in enum com.decoded.stereohttp.<a href="com/decoded/stereohttp/Http.Scheme.html" title="enum in com.decoded.stereohttp">Http.Scheme</a></dt>
 <dd>&nbsp;</dd>
 </dl>
@@ -375,17 +397,35 @@
 <h2 class="title">S</h2>
 <dl>
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/RestRequest.Builder.html#setBody-java.lang.String-">setBody(String)</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a></dt>
-<dd>&nbsp;</dd>
+<dd>
+<div class="block">Sets the request body</div>
+</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/stereohttp/RestRequest.Builder.html#setCookies-java.util.List-">setCookies(List&lt;Pair&lt;String, String&gt;&gt;)</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a></dt>
+<dd>
+<div class="block">Sets the request cookies</div>
+</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/Feedback.html#setError-int-java.lang.String-java.lang.Throwable-">setError(int, String, Throwable)</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/Feedback.html" title="class in com.decoded.stereohttp">Feedback</a></dt>
 <dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/stereohttp/RestRequest.Builder.html#setFormData-java.util.List-">setFormData(List&lt;Pair&lt;String, String&gt;&gt;)</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a></dt>
+<dd>
+<div class="block">Sets the form data for the request for Multipart forms.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/RestRequest.Builder.html#setHeaders-java.util.Map-">setHeaders(Map&lt;String, String&gt;)</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a></dt>
-<dd>&nbsp;</dd>
+<dd>
+<div class="block">Sets the headers</div>
+</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/RestRequest.Builder.html#setHost-java.lang.String-">setHost(String)</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a></dt>
-<dd>&nbsp;</dd>
+<dd>
+<div class="block">sets the host</div>
+</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/RestRequest.Builder.html#setIdentifier-ID_T-">setIdentifier(ID_T)</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a></dt>
-<dd>&nbsp;</dd>
+<dd>
+<div class="block">Set the identifier</div>
+</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/RestRequest.Builder.html#setIdentifierBatch-java.util.Set-">setIdentifierBatch(Set&lt;ID_T&gt;)</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a></dt>
-<dd>&nbsp;</dd>
+<dd>
+<div class="block">Sets a batch of identifiers</div>
+</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/StereoHttpClient.html#setMaxOutboundConnections-int-">setMaxOutboundConnections(int)</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/StereoHttpClient.html" title="class in com.decoded.stereohttp">StereoHttpClient</a></dt>
 <dd>
 <div class="block">Set the NIO client outbound connection maximum</div>
@@ -395,13 +435,21 @@
 <div class="block">The max output connections per route</div>
 </dd>
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/RestRequest.Builder.html#setPort-int-">setPort(int)</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a></dt>
-<dd>&nbsp;</dd>
+<dd>
+<div class="block">Set The port for the url</div>
+</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/RestRequest.Builder.html#setRequestMethod-com.decoded.stereohttp.RequestMethod-">setRequestMethod(RequestMethod)</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a></dt>
-<dd>&nbsp;</dd>
+<dd>
+<div class="block">The <a href="com/decoded/stereohttp/RequestMethod.html" title="enum in com.decoded.stereohttp"><code>RequestMethod</code></a></div>
+</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/RestRequest.Builder.html#setRequestParams-java.util.List-">setRequestParams(List&lt;Pair&lt;String, String&gt;&gt;)</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a></dt>
-<dd>&nbsp;</dd>
+<dd>
+<div class="block">The request parameters in the url</div>
+</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/RestRequest.Builder.html#setRequestPath-java.lang.String-">setRequestPath(String)</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a></dt>
-<dd>&nbsp;</dd>
+<dd>
+<div class="block">Set the request path (after the uri)</div>
+</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/StereoHttpRequest.html#setResponseConsumer-org.apache.http.nio.protocol.AbstractAsyncResponseConsumer-">setResponseConsumer(AbstractAsyncResponseConsumer&lt;HttpResponse&gt;)</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp">StereoHttpRequest</a></dt>
 <dd>
 <div class="block">Consume the response</div>
@@ -412,6 +460,10 @@
 </dd>
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/Feedback.html#setSuccess-int-T-java.lang.String-">setSuccess(int, T, String)</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/Feedback.html" title="class in com.decoded.stereohttp">Feedback</a></dt>
 <dd>&nbsp;</dd>
+<dt><span class="memberNameLink"><a href="com/decoded/stereohttp/RestRequest.Builder.html#setUrlEncodedFormData-java.util.List-">setUrlEncodedFormData(List&lt;Pair&lt;String, String&gt;&gt;)</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a></dt>
+<dd>
+<div class="block">Set the url encoded form data.</div>
+</dd>
 <dt><span class="memberNameLink"><a href="com/decoded/stereohttp/StereoHttpClient.html#start--">start()</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/StereoHttpClient.html" title="class in com.decoded.stereohttp">StereoHttpClient</a></dt>
 <dd>
 <div class="block">Start the non-blocking client on our executor thread.</div>
@@ -469,11 +521,11 @@
 <dd>
 <div class="block">Https Immutable read object used to handled non-blocking io</div>
 </dd>
-<dt><span class="memberNameLink"><a href="com/decoded/stereohttp/StereoHttpClient.html#stereoSecureWrite-com.decoded.stereohttp.RestRequest-java.util.function.Consumer-java.util.function.Supplier-">stereoSecureWrite(RestRequest, Consumer&lt;StereoHttpRequest&gt;, Supplier&lt;String&gt;)</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/StereoHttpClient.html" title="class in com.decoded.stereohttp">StereoHttpClient</a></dt>
+<dt><span class="memberNameLink"><a href="com/decoded/stereohttp/StereoHttpClient.html#stereoSecureWrite-com.decoded.stereohttp.RestRequest-java.util.function.Consumer-">stereoSecureWrite(RestRequest, Consumer&lt;StereoHttpRequest&gt;)</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/StereoHttpClient.html" title="class in com.decoded.stereohttp">StereoHttpClient</a></dt>
 <dd>
 <div class="block">Https Immutable read object used to handled non-blocking io</div>
 </dd>
-<dt><span class="memberNameLink"><a href="com/decoded/stereohttp/StereoHttpClient.html#stereoWriteRequest-com.decoded.stereohttp.RestRequest-java.util.function.Consumer-java.util.function.Supplier-">stereoWriteRequest(RestRequest, Consumer&lt;StereoHttpRequest&gt;, Supplier&lt;String&gt;)</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/StereoHttpClient.html" title="class in com.decoded.stereohttp">StereoHttpClient</a></dt>
+<dt><span class="memberNameLink"><a href="com/decoded/stereohttp/StereoHttpClient.html#stereoWriteRequest-com.decoded.stereohttp.RestRequest-java.util.function.Consumer-">stereoWriteRequest(RestRequest, Consumer&lt;StereoHttpRequest&gt;)</a></span> - Method in class com.decoded.stereohttp.<a href="com/decoded/stereohttp/StereoHttpClient.html" title="class in com.decoded.stereohttp">StereoHttpClient</a></dt>
 <dd>
 <div class="block">Write to a host</div>
 </dd>

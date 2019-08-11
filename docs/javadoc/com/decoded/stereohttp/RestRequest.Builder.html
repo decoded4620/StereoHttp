@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10,"i14":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -154,44 +154,96 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code><a href="../../../com/decoded/stereohttp/RestRequest.html" title="class in com.decoded.stereohttp">RestRequest</a>&lt;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">T</a>,<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html#build--">build</a></span>()</code>&nbsp;</td>
+<td class="colFirst"><code><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a>&lt;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">T</a>,<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html#addHeader-java.lang.String-java.lang.String-">addHeader</a></span>(java.lang.String&nbsp;headerName,
+         java.lang.String&nbsp;headerValue)</code>
+<div class="block">Add or overwrite a specified header</div>
+</td>
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a>&lt;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">T</a>,<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html#setBody-java.lang.String-">setBody</a></span>(java.lang.String&nbsp;body)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html#addRequestParam-java.lang.String-java.lang.String-">addRequestParam</a></span>(java.lang.String&nbsp;paramName,
+               java.lang.String&nbsp;paramValue)</code>
+<div class="block">Add a single param to the request params.</div>
+</td>
 </tr>
 <tr id="i2" class="altColor">
-<td class="colFirst"><code><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a>&lt;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">T</a>,<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html#setHeaders-java.util.Map-">setHeaders</a></span>(java.util.Map&lt;java.lang.String,java.lang.String&gt;&nbsp;headers)</code>&nbsp;</td>
+<td class="colFirst"><code><a href="../../../com/decoded/stereohttp/RestRequest.html" title="class in com.decoded.stereohttp">RestRequest</a>&lt;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">T</a>,<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html#build--">build</a></span>()</code>
+<div class="block">Builds a rest request.</div>
+</td>
 </tr>
 <tr id="i3" class="rowColor">
 <td class="colFirst"><code><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a>&lt;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">T</a>,<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html#setHost-java.lang.String-">setHost</a></span>(java.lang.String&nbsp;host)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html#setBody-java.lang.String-">setBody</a></span>(java.lang.String&nbsp;body)</code>
+<div class="block">Sets the request body</div>
+</td>
 </tr>
 <tr id="i4" class="altColor">
 <td class="colFirst"><code><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a>&lt;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">T</a>,<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html#setIdentifier-ID_T-">setIdentifier</a></span>(<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&nbsp;identifier)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html#setCookies-java.util.List-">setCookies</a></span>(java.util.List&lt;javafx.util.Pair&lt;java.lang.String,java.lang.String&gt;&gt;&nbsp;cookies)</code>
+<div class="block">Sets the request cookies</div>
+</td>
 </tr>
 <tr id="i5" class="rowColor">
 <td class="colFirst"><code><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a>&lt;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">T</a>,<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html#setIdentifierBatch-java.util.Set-">setIdentifierBatch</a></span>(java.util.Set&lt;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&gt;&nbsp;identifiers)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html#setFormData-java.util.List-">setFormData</a></span>(java.util.List&lt;javafx.util.Pair&lt;java.lang.String,java.lang.String&gt;&gt;&nbsp;formData)</code>
+<div class="block">Sets the form data for the request for Multipart forms.</div>
+</td>
 </tr>
 <tr id="i6" class="altColor">
 <td class="colFirst"><code><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a>&lt;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">T</a>,<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html#setPort-int-">setPort</a></span>(int&nbsp;port)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html#setHeaders-java.util.Map-">setHeaders</a></span>(java.util.Map&lt;java.lang.String,java.lang.String&gt;&nbsp;headers)</code>
+<div class="block">Sets the headers</div>
+</td>
 </tr>
 <tr id="i7" class="rowColor">
 <td class="colFirst"><code><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a>&lt;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">T</a>,<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html#setRequestMethod-com.decoded.stereohttp.RequestMethod-">setRequestMethod</a></span>(<a href="../../../com/decoded/stereohttp/RequestMethod.html" title="enum in com.decoded.stereohttp">RequestMethod</a>&nbsp;requestMethod)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html#setHost-java.lang.String-">setHost</a></span>(java.lang.String&nbsp;host)</code>
+<div class="block">sets the host</div>
+</td>
 </tr>
 <tr id="i8" class="altColor">
 <td class="colFirst"><code><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a>&lt;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">T</a>,<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html#setRequestParams-java.util.List-">setRequestParams</a></span>(java.util.List&lt;javafx.util.Pair&lt;java.lang.String,java.lang.String&gt;&gt;&nbsp;requestParams)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html#setIdentifier-ID_T-">setIdentifier</a></span>(<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&nbsp;identifier)</code>
+<div class="block">Set the identifier</div>
+</td>
 </tr>
 <tr id="i9" class="rowColor">
 <td class="colFirst"><code><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a>&lt;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">T</a>,<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&gt;</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html#setRequestPath-java.lang.String-">setRequestPath</a></span>(java.lang.String&nbsp;requestPath)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html#setIdentifierBatch-java.util.Set-">setIdentifierBatch</a></span>(java.util.Set&lt;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&gt;&nbsp;identifiers)</code>
+<div class="block">Sets a batch of identifiers</div>
+</td>
+</tr>
+<tr id="i10" class="altColor">
+<td class="colFirst"><code><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a>&lt;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">T</a>,<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html#setPort-int-">setPort</a></span>(int&nbsp;port)</code>
+<div class="block">Set The port for the url</div>
+</td>
+</tr>
+<tr id="i11" class="rowColor">
+<td class="colFirst"><code><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a>&lt;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">T</a>,<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html#setRequestMethod-com.decoded.stereohttp.RequestMethod-">setRequestMethod</a></span>(<a href="../../../com/decoded/stereohttp/RequestMethod.html" title="enum in com.decoded.stereohttp">RequestMethod</a>&nbsp;requestMethod)</code>
+<div class="block">The <a href="../../../com/decoded/stereohttp/RequestMethod.html" title="enum in com.decoded.stereohttp"><code>RequestMethod</code></a></div>
+</td>
+</tr>
+<tr id="i12" class="altColor">
+<td class="colFirst"><code><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a>&lt;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">T</a>,<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html#setRequestParams-java.util.List-">setRequestParams</a></span>(java.util.List&lt;javafx.util.Pair&lt;java.lang.String,java.lang.String&gt;&gt;&nbsp;requestParams)</code>
+<div class="block">The request parameters in the url</div>
+</td>
+</tr>
+<tr id="i13" class="rowColor">
+<td class="colFirst"><code><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a>&lt;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">T</a>,<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html#setRequestPath-java.lang.String-">setRequestPath</a></span>(java.lang.String&nbsp;requestPath)</code>
+<div class="block">Set the request path (after the uri)</div>
+</td>
+</tr>
+<tr id="i14" class="altColor">
+<td class="colFirst"><code><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a>&lt;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">T</a>,<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html#setUrlEncodedFormData-java.util.List-">setUrlEncodedFormData</a></span>(java.util.List&lt;javafx.util.Pair&lt;java.lang.String,java.lang.String&gt;&gt;&nbsp;urlEncodedFormData)</code>
+<div class="block">Set the url encoded form data.</div>
+</td>
 </tr>
 </table>
 <ul class="blockList">
@@ -240,6 +292,58 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>setBody</h4>
 <pre>public&nbsp;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a>&lt;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">T</a>,<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&gt;&nbsp;setBody(java.lang.String&nbsp;body)</pre>
+<div class="block">Sets the request body</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>body</code> - </dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+</dl>
+</li>
+</ul>
+<a name="setCookies-java.util.List-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setCookies</h4>
+<pre>public&nbsp;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a>&lt;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">T</a>,<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&gt;&nbsp;setCookies(java.util.List&lt;javafx.util.Pair&lt;java.lang.String,java.lang.String&gt;&gt;&nbsp;cookies)</pre>
+<div class="block">Sets the request cookies</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>cookies</code> - </dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+</dl>
+</li>
+</ul>
+<a name="setFormData-java.util.List-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setFormData</h4>
+<pre>public&nbsp;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a>&lt;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">T</a>,<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&gt;&nbsp;setFormData(java.util.List&lt;javafx.util.Pair&lt;java.lang.String,java.lang.String&gt;&gt;&nbsp;formData)</pre>
+<div class="block">Sets the form data for the request for Multipart forms.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>formData</code> - </dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+</dl>
+</li>
+</ul>
+<a name="setUrlEncodedFormData-java.util.List-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setUrlEncodedFormData</h4>
+<pre>public&nbsp;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a>&lt;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">T</a>,<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&gt;&nbsp;setUrlEncodedFormData(java.util.List&lt;javafx.util.Pair&lt;java.lang.String,java.lang.String&gt;&gt;&nbsp;urlEncodedFormData)</pre>
+<div class="block">Set the url encoded form data.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>urlEncodedFormData</code> - the url encoded form data.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>Builder</dd>
+</dl>
 </li>
 </ul>
 <a name="setHost-java.lang.String-">
@@ -249,6 +353,13 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>setHost</h4>
 <pre>public&nbsp;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a>&lt;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">T</a>,<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&gt;&nbsp;setHost(java.lang.String&nbsp;host)</pre>
+<div class="block">sets the host</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>host</code> - the host url</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>this builder</dd>
+</dl>
 </li>
 </ul>
 <a name="setRequestParams-java.util.List-">
@@ -258,6 +369,31 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>setRequestParams</h4>
 <pre>public&nbsp;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a>&lt;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">T</a>,<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&gt;&nbsp;setRequestParams(java.util.List&lt;javafx.util.Pair&lt;java.lang.String,java.lang.String&gt;&gt;&nbsp;requestParams)</pre>
+<div class="block">The request parameters in the url</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>requestParams</code> - the list of params. Names can be repeated to allow for a list of items, etc.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>this builder.</dd>
+</dl>
+</li>
+</ul>
+<a name="addRequestParam-java.lang.String-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>addRequestParam</h4>
+<pre>public&nbsp;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a>&lt;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">T</a>,<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&gt;&nbsp;addRequestParam(java.lang.String&nbsp;paramName,
+                                                   java.lang.String&nbsp;paramValue)</pre>
+<div class="block">Add a single param to the request params.</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>paramName</code> - the name of the param</dd>
+<dd><code>paramValue</code> - the value of the param</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>this builder.</dd>
+</dl>
 </li>
 </ul>
 <a name="setHeaders-java.util.Map-">
@@ -267,6 +403,31 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>setHeaders</h4>
 <pre>public&nbsp;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a>&lt;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">T</a>,<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&gt;&nbsp;setHeaders(java.util.Map&lt;java.lang.String,java.lang.String&gt;&nbsp;headers)</pre>
+<div class="block">Sets the headers</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>headers</code> - the header map.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>this builder</dd>
+</dl>
+</li>
+</ul>
+<a name="addHeader-java.lang.String-java.lang.String-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>addHeader</h4>
+<pre>public&nbsp;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a>&lt;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">T</a>,<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&gt;&nbsp;addHeader(java.lang.String&nbsp;headerName,
+                                             java.lang.String&nbsp;headerValue)</pre>
+<div class="block">Add or overwrite a specified header</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>headerName</code> - the header name</dd>
+<dd><code>headerValue</code> - the value</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>this builder.</dd>
+</dl>
 </li>
 </ul>
 <a name="setRequestPath-java.lang.String-">
@@ -276,6 +437,13 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>setRequestPath</h4>
 <pre>public&nbsp;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a>&lt;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">T</a>,<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&gt;&nbsp;setRequestPath(java.lang.String&nbsp;requestPath)</pre>
+<div class="block">Set the request path (after the uri)</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>requestPath</code> - the path of the request</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>this builder</dd>
+</dl>
 </li>
 </ul>
 <a name="setPort-int-">
@@ -285,6 +453,13 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>setPort</h4>
 <pre>public&nbsp;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a>&lt;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">T</a>,<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&gt;&nbsp;setPort(int&nbsp;port)</pre>
+<div class="block">Set The port for the url</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>port</code> - a port</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>this builder</dd>
+</dl>
 </li>
 </ul>
 <a name="setRequestMethod-com.decoded.stereohttp.RequestMethod-">
@@ -294,6 +469,13 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>setRequestMethod</h4>
 <pre>public&nbsp;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a>&lt;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">T</a>,<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&gt;&nbsp;setRequestMethod(<a href="../../../com/decoded/stereohttp/RequestMethod.html" title="enum in com.decoded.stereohttp">RequestMethod</a>&nbsp;requestMethod)</pre>
+<div class="block">The <a href="../../../com/decoded/stereohttp/RequestMethod.html" title="enum in com.decoded.stereohttp"><code>RequestMethod</code></a></div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>requestMethod</code> - a method</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>this builder</dd>
+</dl>
 </li>
 </ul>
 <a name="setIdentifier-java.lang.Object-">
@@ -305,6 +487,13 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>setIdentifier</h4>
 <pre>public&nbsp;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a>&lt;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">T</a>,<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&gt;&nbsp;setIdentifier(<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&nbsp;identifier)</pre>
+<div class="block">Set the identifier</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>identifier</code> - the id</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>this builder</dd>
+</dl>
 </li>
 </ul>
 <a name="setIdentifierBatch-java.util.Set-">
@@ -314,6 +503,12 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>setIdentifierBatch</h4>
 <pre>public&nbsp;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a>&lt;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">T</a>,<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&gt;&nbsp;setIdentifierBatch(java.util.Set&lt;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&gt;&nbsp;identifiers)</pre>
+<div class="block">Sets a batch of identifiers</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>identifiers</code> - </dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+</dl>
 </li>
 </ul>
 <a name="build--">
@@ -323,6 +518,11 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>build</h4>
 <pre>public&nbsp;<a href="../../../com/decoded/stereohttp/RestRequest.html" title="class in com.decoded.stereohttp">RestRequest</a>&lt;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">T</a>,<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&gt;&nbsp;build()</pre>
+<div class="block">Builds a rest request.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>a <a href="../../../com/decoded/stereohttp/RestRequest.html" title="class in com.decoded.stereohttp"><code>RestRequest</code></a> of type T / ID_T</dd>
+</dl>
 </li>
 </ul>
 </li>

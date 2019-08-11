@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -178,51 +178,69 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
+<td class="colFirst"><code>java.util.List&lt;javafx.util.Pair&lt;java.lang.String,java.lang.String&gt;&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RestRequest.html#getCookies--">getCookies</a></span>()</code>
+<div class="block">Returns the list of cookies.</div>
+</td>
+</tr>
+<tr id="i2" class="altColor">
+<td class="colFirst"><code>java.util.List&lt;javafx.util.Pair&lt;java.lang.String,java.lang.String&gt;&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RestRequest.html#getFormData--">getFormData</a></span>()</code>
+<div class="block">Form Data</div>
+</td>
+</tr>
+<tr id="i3" class="rowColor">
 <td class="colFirst"><code>java.util.Map&lt;java.lang.String,java.lang.String&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RestRequest.html#getHeaders--">getHeaders</a></span>()</code>
 <div class="block">the headers</div>
 </td>
 </tr>
-<tr id="i2" class="altColor">
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RestRequest.html#getHost--">getHost</a></span>()</code>
 <div class="block">The Host.</div>
 </td>
 </tr>
-<tr id="i3" class="rowColor">
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>java.util.Set&lt;<a href="../../../com/decoded/stereohttp/RestRequest.html" title="type parameter in RestRequest">ID_T</a>&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RestRequest.html#getIdentifiers--">getIdentifiers</a></span>()</code>
 <div class="block">The Request Identifiers.</div>
 </td>
 </tr>
-<tr id="i4" class="altColor">
+<tr id="i6" class="altColor">
 <td class="colFirst"><code>int</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RestRequest.html#getPort--">getPort</a></span>()</code>
 <div class="block">The port</div>
 </td>
 </tr>
-<tr id="i5" class="rowColor">
+<tr id="i7" class="rowColor">
 <td class="colFirst"><code><a href="../../../com/decoded/stereohttp/RequestMethod.html" title="enum in com.decoded.stereohttp">RequestMethod</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RestRequest.html#getRequestMethod--">getRequestMethod</a></span>()</code>
 <div class="block"><a href="../../../com/decoded/stereohttp/RequestMethod.html" title="enum in com.decoded.stereohttp"><code>RequestMethod</code></a> for the request.</div>
 </td>
 </tr>
-<tr id="i6" class="altColor">
+<tr id="i8" class="altColor">
 <td class="colFirst"><code>java.util.List&lt;javafx.util.Pair&lt;java.lang.String,java.lang.String&gt;&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RestRequest.html#getRequestParams--">getRequestParams</a></span>()</code>
 <div class="block">Returns the request parameters.</div>
 </td>
 </tr>
-<tr id="i7" class="rowColor">
+<tr id="i9" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RestRequest.html#getRequestPath--">getRequestPath</a></span>()</code>
 <div class="block">The request URI, including params.</div>
 </td>
 </tr>
-<tr id="i8" class="altColor">
+<tr id="i10" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RestRequest.html#getRequestUri--">getRequestUri</a></span>()</code>
 <div class="block">Get Request Uri</div>
+</td>
+</tr>
+<tr id="i11" class="rowColor">
+<td class="colFirst"><code>java.util.List&lt;javafx.util.Pair&lt;java.lang.String,java.lang.String&gt;&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RestRequest.html#getUrlEncodedFormData--">getUrlEncodedFormData</a></span>()</code>
+<div class="block">The form data if the content is url encoded form data.</div>
 </td>
 </tr>
 </table>
@@ -283,6 +301,20 @@ extends java.lang.Object</pre>
 </dl>
 </li>
 </ul>
+<a name="getCookies--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getCookies</h4>
+<pre>public&nbsp;java.util.List&lt;javafx.util.Pair&lt;java.lang.String,java.lang.String&gt;&gt;&nbsp;getCookies()</pre>
+<div class="block">Returns the list of cookies.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>a list of name of value pair.</dd>
+</dl>
+</li>
+</ul>
 <a name="getRequestPath--">
 <!--   -->
 </a>
@@ -336,6 +368,34 @@ extends java.lang.Object</pre>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>a String.</dd>
+</dl>
+</li>
+</ul>
+<a name="getFormData--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getFormData</h4>
+<pre>public&nbsp;java.util.List&lt;javafx.util.Pair&lt;java.lang.String,java.lang.String&gt;&gt;&nbsp;getFormData()</pre>
+<div class="block">Form Data</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>a set of form elements with name value pairs.</dd>
+</dl>
+</li>
+</ul>
+<a name="getUrlEncodedFormData--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getUrlEncodedFormData</h4>
+<pre>public&nbsp;java.util.List&lt;javafx.util.Pair&lt;java.lang.String,java.lang.String&gt;&gt;&nbsp;getUrlEncodedFormData()</pre>
+<div class="block">The form data if the content is url encoded form data.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>a list of Pair of strings</dd>
 </dl>
 </li>
 </ul>

@@ -17,7 +17,7 @@ import java.util.*;
  * @param <T> the model type we are requesting.
  */
 public class RestRequest<T, ID_T> {
-  private Logger LOG = LoggerFactory.getLogger(RestRequest.class);
+  private static final Logger LOG = LoggerFactory.getLogger(RestRequest.class);
 
   private final String host;
   private final int port;
@@ -26,6 +26,9 @@ public class RestRequest<T, ID_T> {
   private final String requestPath;
   private final Set<ID_T> identifiers;
   private final List<Pair<String, String>> requestParams;
+  private final List<Pair<String, String>> formData;
+  private final List<Pair<String, String>> urlEncodedFormData;
+  private final List<Pair<String, String>> cookies;
   private final Map<String, String> headers;
   /**
    * Constructor
@@ -41,6 +44,9 @@ public class RestRequest<T, ID_T> {
     requestMethod = builder.requestMethod;
     requestPath = builder.requestPath;
     requestParams = builder.requestParams;
+    formData = builder.formData;
+    urlEncodedFormData = builder.urlEncodedFormData;
+    cookies = builder.cookies;
   }
 
   /**
@@ -51,6 +57,15 @@ public class RestRequest<T, ID_T> {
   public List<Pair<String, String>> getRequestParams() {
     return requestParams;
   }
+
+  /**
+   * Returns the list of cookies.
+   * @return a list of name of value pair.
+   */
+  public List<Pair<String, String>> getCookies() {
+    return cookies;
+  }
+
 
   /**
    * The request URI, including params.
@@ -109,6 +124,22 @@ public class RestRequest<T, ID_T> {
   }
 
   /**
+   * Form Data
+   * @return a set of form elements with name value pairs.
+   */
+  public List<Pair<String, String>> getFormData() {
+    return formData;
+  }
+
+  /**
+   * The form data if the content is url encoded form data.
+   * @return a list of Pair of strings
+   */
+  public List<Pair<String, String>> getUrlEncodedFormData() {
+    return urlEncodedFormData;
+  }
+
+  /**
    * The Host.
    *
    * @return a String.
@@ -153,8 +184,11 @@ public class RestRequest<T, ID_T> {
     private String body;
     private int port;
     private String requestPath;
-    private List<Pair<String, String>> requestParams = Collections.emptyList();
-    private Map<String, String> headers = Collections.emptyMap();
+    private List<Pair<String, String>> requestParams = new ArrayList<>();
+    private List<Pair<String, String>> formData = new ArrayList<>();
+    private List<Pair<String, String>> urlEncodedFormData = new ArrayList<>();
+    private Map<String, String> headers = new HashMap<>();
+    private List<Pair<String, String>> cookies = new ArrayList<>();
     private RequestMethod requestMethod = RequestMethod.GET;
     private Set<ID_T> identifiers = Collections.emptySet();
     private Class<T> tClass;
@@ -165,51 +199,155 @@ public class RestRequest<T, ID_T> {
       this.idClass = idClazz;
     }
 
+    /**
+     * Sets the request body
+     * @param body
+     * @return
+     */
     public Builder<T, ID_T> setBody(final String body) {
       this.body = body;
       return this;
     }
 
+    /**
+     * Sets the request cookies
+     * @param cookies
+     * @return
+     */
+    public Builder<T, ID_T> setCookies(List<Pair<String, String>> cookies) {
+      this.cookies = cookies;
+      return this;
+    }
+
+    /**
+     * Sets the form data for the request for Multipart forms.
+     * @param formData
+     * @return
+     */
+    public Builder<T, ID_T> setFormData(List<Pair<String, String>> formData) {
+      this.formData = formData;
+      return this;
+    }
+
+    /**
+     * Set the url encoded form data.
+     * @param urlEncodedFormData the url encoded form data.
+     * @return Builder
+     */
+    public Builder<T, ID_T> setUrlEncodedFormData(List<Pair<String, String>> urlEncodedFormData) {
+      this.urlEncodedFormData = urlEncodedFormData;
+      return this;
+    }
+
+    /**
+     * sets the host
+     * @param host the host url
+     * @return this builder
+     */
     public Builder<T, ID_T> setHost(String host) {
       this.host = host;
       return this;
     }
 
+    /**
+     * The request parameters in the url
+     * @param requestParams the list of params. Names can be repeated to allow for a list of items, etc.
+     * @return this builder.
+     */
     public Builder<T, ID_T> setRequestParams(List<Pair<String, String>> requestParams) {
       this.requestParams = requestParams;
       return this;
     }
 
+    /**
+     * Add a single param to the request params.
+     * @param paramName the name of the param
+     * @param paramValue the value of the param
+     * @return this builder.
+     */
+    public Builder<T, ID_T> addRequestParam(final String paramName, final String paramValue) {
+      this.requestParams.add(new Pair<>(paramName, paramValue));
+      return this;
+    }
+
+    /**
+     * Sets the headers
+     * @param headers the header map.
+     * @return this builder
+     */
     public Builder<T, ID_T> setHeaders(final Map<String, String> headers) {
       this.headers = headers;
       return this;
     }
 
+    /**
+     * Add or overwrite a specified header
+     * @param headerName the header name
+     * @param headerValue the value
+     * @return this builder.
+     */
+    public Builder<T, ID_T> addHeader(final String headerName, final String headerValue) {
+      if(this.headers.containsKey(headerName)) {
+        LOG.warn("Overwrite header: " + headerName);
+      }
+      this.headers.put(headerName, headerValue);
+      return this;
+    }
+
+    /**
+     * Set the request path (after the uri)
+     * @param requestPath the path of the request
+     * @return this builder
+     */
     public Builder<T, ID_T> setRequestPath(String requestPath) {
       this.requestPath = requestPath;
       return this;
     }
 
+    /**
+     * Set The port for the url
+     * @param port a port
+     * @return this builder
+     */
     public Builder<T, ID_T> setPort(int port) {
       this.port = port;
       return this;
     }
 
+    /**
+     * The {@link RequestMethod}
+     * @param requestMethod a method
+     * @return this builder
+     */
     public Builder<T, ID_T> setRequestMethod(RequestMethod requestMethod) {
       this.requestMethod = requestMethod;
       return this;
     }
 
+    /**
+     * Set the identifier
+     * @param identifier the id
+     * @return this builder
+     */
     public Builder<T, ID_T> setIdentifier(ID_T identifier) {
       this.identifiers = Collections.singleton(identifier);
       return this;
     }
 
+    /**
+     * Sets a batch of identifiers
+     * @param identifiers
+     * @return
+     */
     public Builder<T, ID_T> setIdentifierBatch(Set<ID_T> identifiers) {
       this.identifiers = ImmutableSet.copyOf(identifiers);
       return this;
     }
 
+    /**
+     * Builds a rest request.
+     * @return a {@link RestRequest} of type T / ID_T
+     */
     public RestRequest<T, ID_T> build() {
       return new RestRequest<>(this);
     }

@@ -9,6 +9,7 @@ public enum RequestMethod {
   TRACE("TRACE"),
   POST("POST"),
   PUT("PUT"),
+  PATCH("PATCH"),
   DELETE("DELETE"),
   CREATE("CREATE"),
   CONNECT("CONNECT"),
@@ -21,7 +22,7 @@ public enum RequestMethod {
   }
 
   public static boolean isWriteMethod(RequestMethod method) {
-    return method.equals(POST) || method.equals(PUT) || method.equals(CREATE);
+    return method.equals(POST) || method.equals(PUT) || method.equals(PATCH) || method.equals(CREATE) || method.equals(DELETE);
   }
 
   public String methodName() {

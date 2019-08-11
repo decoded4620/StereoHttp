@@ -252,17 +252,15 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i10" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpClient.html#stereoSecureWrite-com.decoded.stereohttp.RestRequest-java.util.function.Consumer-java.util.function.Supplier-">stereoSecureWrite</a></span>(<a href="../../../com/decoded/stereohttp/RestRequest.html" title="class in com.decoded.stereohttp">RestRequest</a>&nbsp;restRequest,
-                 java.util.function.Consumer&lt;<a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp">StereoHttpRequest</a>&gt;&nbsp;requestConsumer,
-                 java.util.function.Supplier&lt;java.lang.String&gt;&nbsp;serializedEntitySupplier)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpClient.html#stereoSecureWrite-com.decoded.stereohttp.RestRequest-java.util.function.Consumer-">stereoSecureWrite</a></span>(<a href="../../../com/decoded/stereohttp/RestRequest.html" title="class in com.decoded.stereohttp">RestRequest</a>&nbsp;restRequest,
+                 java.util.function.Consumer&lt;<a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp">StereoHttpRequest</a>&gt;&nbsp;requestConsumer)</code>
 <div class="block">Https Immutable read object used to handled non-blocking io</div>
 </td>
 </tr>
 <tr id="i11" class="rowColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpClient.html#stereoWriteRequest-com.decoded.stereohttp.RestRequest-java.util.function.Consumer-java.util.function.Supplier-">stereoWriteRequest</a></span>(<a href="../../../com/decoded/stereohttp/RestRequest.html" title="class in com.decoded.stereohttp">RestRequest</a>&nbsp;restRequest,
-                  java.util.function.Consumer&lt;<a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp">StereoHttpRequest</a>&gt;&nbsp;requestConsumer,
-                  java.util.function.Supplier&lt;java.lang.String&gt;&nbsp;serializedEntitySupplier)</code>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpClient.html#stereoWriteRequest-com.decoded.stereohttp.RestRequest-java.util.function.Consumer-">stereoWriteRequest</a></span>(<a href="../../../com/decoded/stereohttp/RestRequest.html" title="class in com.decoded.stereohttp">RestRequest</a>&nbsp;restRequest,
+                  java.util.function.Consumer&lt;<a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp">StereoHttpRequest</a>&gt;&nbsp;requestConsumer)</code>
 <div class="block">Write to a host</div>
 </td>
 </tr>
@@ -456,21 +454,19 @@ public&nbsp;StereoHttpClient(java.util.concurrent.ExecutorService&nbsp;executorS
 </dl>
 </li>
 </ul>
-<a name="stereoWriteRequest-com.decoded.stereohttp.RestRequest-java.util.function.Consumer-java.util.function.Supplier-">
+<a name="stereoWriteRequest-com.decoded.stereohttp.RestRequest-java.util.function.Consumer-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
 <h4>stereoWriteRequest</h4>
 <pre>public&nbsp;void&nbsp;stereoWriteRequest(<a href="../../../com/decoded/stereohttp/RestRequest.html" title="class in com.decoded.stereohttp">RestRequest</a>&nbsp;restRequest,
-                               java.util.function.Consumer&lt;<a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp">StereoHttpRequest</a>&gt;&nbsp;requestConsumer,
-                               java.util.function.Supplier&lt;java.lang.String&gt;&nbsp;serializedEntitySupplier)</pre>
+                               java.util.function.Consumer&lt;<a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp">StereoHttpRequest</a>&gt;&nbsp;requestConsumer)</pre>
 <div class="block">Write to a host</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>restRequest</code> - a rest request.</dd>
 <dd><code>requestConsumer</code> - consumer for the created request.</dd>
-<dd><code>serializedEntitySupplier</code> - the entity data to write.</dd>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../com/decoded/stereohttp/StereoHttpClient.html#stereoReadRequest-com.decoded.stereohttp.RestRequest-java.util.function.Consumer-"><code>stereoReadRequest(RestRequest, Consumer)</code></a></dd>
 </dl>
@@ -492,21 +488,19 @@ public&nbsp;StereoHttpClient(java.util.concurrent.ExecutorService&nbsp;executorS
 </dl>
 </li>
 </ul>
-<a name="stereoSecureWrite-com.decoded.stereohttp.RestRequest-java.util.function.Consumer-java.util.function.Supplier-">
+<a name="stereoSecureWrite-com.decoded.stereohttp.RestRequest-java.util.function.Consumer-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>stereoSecureWrite</h4>
 <pre>public&nbsp;void&nbsp;stereoSecureWrite(<a href="../../../com/decoded/stereohttp/RestRequest.html" title="class in com.decoded.stereohttp">RestRequest</a>&nbsp;restRequest,
-                              java.util.function.Consumer&lt;<a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp">StereoHttpRequest</a>&gt;&nbsp;requestConsumer,
-                              java.util.function.Supplier&lt;java.lang.String&gt;&nbsp;serializedEntitySupplier)</pre>
+                              java.util.function.Consumer&lt;<a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp">StereoHttpRequest</a>&gt;&nbsp;requestConsumer)</pre>
 <div class="block">Https Immutable read object used to handled non-blocking io</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>restRequest</code> - request</dd>
 <dd><code>requestConsumer</code> - a consumer of the created request.</dd>
-<dd><code>serializedEntitySupplier</code> - the supplier for a serialized result.</dd>
 </dl>
 </li>
 </ul>

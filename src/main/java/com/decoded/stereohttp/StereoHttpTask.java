@@ -328,7 +328,7 @@ public class StereoHttpTask<T> {
         }).exceptionally(ex -> {
           LOG.warn("Stereo Raw Http Request Exception: " + ex.getClass().getName(), ex);
           if(ex.getCause() instanceof ConnectException) {
-            setFeedbackRequestError(feedback, HttpStatus.SC_FORBIDDEN, null, "Exception occurred: ", ex);
+            setFeedbackRequestError(feedback, HttpStatus.SC_BAD_GATEWAY, null, "Exception occurred: ", ex);
           } else {
             setFeedbackRequestError(feedback, HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "Exception occurred: ", ex);
           }
@@ -339,7 +339,7 @@ public class StereoHttpTask<T> {
       };
 
       if (RequestMethod.isWriteMethod(httpRequest.getRequestMethod())) {
-        stereoHttpClient.stereoWriteRequest(httpRequest, requestCreateCallback, httpRequest::getBody);
+        stereoHttpClient.stereoWriteRequest(httpRequest, requestCreateCallback);
       } else {
         stereoHttpClient.stereoReadRequest(httpRequest, requestCreateCallback);
       }
@@ -348,7 +348,7 @@ public class StereoHttpTask<T> {
         LOG.info("Waiting for request to complete..." + httpRequest.getRequestUri());
         if (!feedback.await(timeout, TimeUnit.MILLISECONDS)) {
           LOG.info("Request Timed out! " + httpRequest.getRequestUri());
-          setFeedbackRequestError(feedback, HttpStatus.SC_INTERNAL_SERVER_ERROR, "", "Request Timed out!");
+          setFeedbackRequestError(feedback, HttpStatus.SC_GATEWAY_TIMEOUT, "", "Request Timed out!");
         }
       } catch (InterruptedException ex) {
         LOG.info("Request Interrupted: " + httpRequest.getRequestUri() + ", error: " + ex.getMessage());

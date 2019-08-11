@@ -1,17 +1,26 @@
 package com.decoded.stereohttp;
 
+
+import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.ConnectionClosedException;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
+import org.apache.http.client.entity.EntityBuilder;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.protocol.RequestAcceptEncoding;
 import org.apache.http.client.protocol.RequestDefaultHeaders;
 import org.apache.http.config.ConnectionConfig;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.nio.DefaultHttpClientIODispatch;
 import org.apache.http.impl.nio.pool.BasicNIOConnPool;
 import org.apache.http.impl.nio.reactor.DefaultConnectingIOReactor;
 import org.apache.http.message.BasicHttpEntityEnclosingRequest;
 import org.apache.http.message.BasicHttpRequest;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.nio.protocol.HttpAsyncRequestExecutor;
 import org.apache.http.nio.protocol.HttpAsyncRequester;
 import org.apache.http.nio.reactor.ConnectingIOReactor;
@@ -28,6 +37,7 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 
 /**
@@ -349,36 +359,54 @@ public class StereoHttpClient {
    * @param scheme                   the scheme to write
    * @param restRequest              the rest request.
    * @param requestConsumer          the consumer
-   * @param serializedEntitySupplier the serialized entity supplier.
    */
   private void write(Http.Scheme scheme,
-      RestRequest restRequest,
-      Consumer<StereoHttpRequest> requestConsumer,
-      Supplier<String> serializedEntitySupplier) {
+      RestRequest<?, ?> restRequest,
+      Consumer<StereoHttpRequest> requestConsumer) {
     String host = restRequest.getHost();
     int port = restRequest.getPort();
     RequestMethod method = restRequest.getRequestMethod();
     String uri = restRequest.getRequestUri();
 
 
-    if (method.equals(RequestMethod.CREATE) || method.equals(RequestMethod.PUT) || method.equals(RequestMethod.POST)) {
+    if (RequestMethod.isWriteMethod(method)) {
       BasicHttpEntityEnclosingRequest httpRequest = new BasicHttpEntityEnclosingRequest(method.methodName(), uri);
 
       Map<String, String> headers = restRequest.getHeaders();
       headers.forEach(httpRequest::addHeader);
 
-      Optional.ofNullable(serializedEntitySupplier.get()).ifPresent(serializedEntity -> {
-        try {
-          if (serializedEntitySupplier.get() == null) {
-            httpRequest.setEntity(new StringEntity(""));
-          } else {
-            httpRequest.setEntity(new StringEntity(serializedEntitySupplier.get()));
-          }
+      restRequest.getCookies().forEach(cookie -> httpRequest.addHeader("Cookie", cookie.getKey()+"="+cookie.getValue()));
 
-        } catch (UnsupportedEncodingException ex) {
-          LOG.info("Not supported!");
+      if(!restRequest.getFormData().isEmpty()) {
+        LOG.info("Submitting Form Data");
+        final MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+        restRequest.getFormData().forEach(pair -> builder.addTextBody(pair.getKey(), pair.getValue()));
+        final HttpEntity entity = builder.build();
+        httpRequest.setEntity(entity);
+      } else if(!restRequest.getUrlEncodedFormData().isEmpty()) {
+        List<BasicNameValuePair> pairs = new ArrayList<>();
+        restRequest.getUrlEncodedFormData().forEach(pair -> pairs.add(new BasicNameValuePair(pair.getKey(), pair.getValue())));
+        try {
+          UrlEncodedFormEntity entity = new UrlEncodedFormEntity(pairs);
+          httpRequest.setEntity(entity);
+        } catch(UnsupportedEncodingException ex) {
+          LOG.warn("Not supported url encoded form data", ex);
         }
-      });
+      } else {
+        Optional.ofNullable(restRequest.getBody()).ifPresent(serializedEntity -> {
+          try {
+              LOG.info("Submitting String Entity Data");
+              if (StringUtils.isEmpty(restRequest.getBody())) {
+                httpRequest.setEntity(new StringEntity(""));
+              } else {
+                httpRequest.setEntity(new StringEntity(restRequest.getBody()));
+              }
+          } catch (UnsupportedEncodingException ex) {
+            LOG.warn("Not supported!", ex);
+          }
+        });
+      }
+
 
       handleOutgoingRequest(scheme, host, port, httpRequest, requestConsumer);
     } else {
@@ -427,14 +455,12 @@ public class StereoHttpClient {
    *
    * @param restRequest              a rest request.
    * @param requestConsumer          consumer for the created request.
-   * @param serializedEntitySupplier the entity data to write.
    *
    * @see StereoHttpClient#stereoReadRequest(RestRequest, Consumer)
    */
   public void stereoWriteRequest(RestRequest restRequest,
-      Consumer<StereoHttpRequest> requestConsumer,
-      Supplier<String> serializedEntitySupplier) {
-    write(Http.Scheme.HTTP, restRequest, requestConsumer, serializedEntitySupplier);
+      Consumer<StereoHttpRequest> requestConsumer) {
+    write(Http.Scheme.HTTP, restRequest, requestConsumer);
   }
 
   /**
@@ -451,12 +477,10 @@ public class StereoHttpClient {
    *
    * @param restRequest     request
    * @param requestConsumer a consumer of the created request.
-   * @param serializedEntitySupplier the supplier for a serialized result.
    */
   public void stereoSecureWrite(RestRequest restRequest,
-      Consumer<StereoHttpRequest> requestConsumer,
-      Supplier<String> serializedEntitySupplier) {
-    write(Http.Scheme.HTTPS, restRequest, requestConsumer, serializedEntitySupplier);
+      Consumer<StereoHttpRequest> requestConsumer) {
+    write(Http.Scheme.HTTPS, restRequest, requestConsumer);
   }
 
 
