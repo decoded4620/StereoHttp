@@ -1,18 +1,15 @@
 package com.decoded.stereohttp;
 
 
-import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.ConnectionClosedException;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
-import org.apache.http.client.entity.EntityBuilder;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.protocol.RequestAcceptEncoding;
 import org.apache.http.client.protocol.RequestDefaultHeaders;
 import org.apache.http.config.ConnectionConfig;
-import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.nio.DefaultHttpClientIODispatch;
@@ -37,7 +34,6 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 
 /**
@@ -372,8 +368,8 @@ public class StereoHttpClient {
     if (RequestMethod.isWriteMethod(method)) {
       BasicHttpEntityEnclosingRequest httpRequest = new BasicHttpEntityEnclosingRequest(method.methodName(), uri);
 
-      Map<String, String> headers = restRequest.getHeaders();
-      headers.forEach(httpRequest::addHeader);
+      Map<String, List<String>> headers = restRequest.getHeaders();
+      headers.forEach((k, v) -> v.forEach(hV -> httpRequest.addHeader(k, hV)));
 
       restRequest.getCookies().forEach(cookie -> httpRequest.addHeader("Cookie", cookie.getKey()+"="+cookie.getValue()));
 

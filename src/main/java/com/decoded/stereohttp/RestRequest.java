@@ -29,7 +29,7 @@ public class RestRequest<T, ID_T> {
   private final List<Pair<String, String>> formData;
   private final List<Pair<String, String>> urlEncodedFormData;
   private final List<Pair<String, String>> cookies;
-  private final Map<String, String> headers;
+  private final Map<String, List<String>> headers;
   /**
    * Constructor
    *
@@ -161,7 +161,7 @@ public class RestRequest<T, ID_T> {
    * the headers
    * @return map of headers.
    */
-  public Map<String, String> getHeaders() {
+  public Map<String, List<String>> getHeaders() {
     return headers;
   }
 
@@ -187,7 +187,7 @@ public class RestRequest<T, ID_T> {
     private List<Pair<String, String>> requestParams = new ArrayList<>();
     private List<Pair<String, String>> formData = new ArrayList<>();
     private List<Pair<String, String>> urlEncodedFormData = new ArrayList<>();
-    private Map<String, String> headers = new HashMap<>();
+    private Map<String, List<String>> headers = new HashMap<>();
     private List<Pair<String, String>> cookies = new ArrayList<>();
     private RequestMethod requestMethod = RequestMethod.GET;
     private Set<ID_T> identifiers = Collections.emptySet();
@@ -201,8 +201,8 @@ public class RestRequest<T, ID_T> {
 
     /**
      * Sets the request body
-     * @param body
-     * @return
+     * @param body the body content
+     * @return this builder
      */
     public Builder<T, ID_T> setBody(final String body) {
       this.body = body;
@@ -211,31 +211,31 @@ public class RestRequest<T, ID_T> {
 
     /**
      * Sets the request cookies
-     * @param cookies
-     * @return
+     * @param cookie the cookie to set
+     * @return this builder
      */
-    public Builder<T, ID_T> setCookies(List<Pair<String, String>> cookies) {
-      this.cookies = cookies;
+    public Builder<T, ID_T> setCookie(Pair<String, String> cookie) {
+      this.cookies.add(cookie);
       return this;
     }
 
     /**
      * Sets the form data for the request for Multipart forms.
-     * @param formData
-     * @return
+     * @param formDataItem multipart form data item
+     * @return this builder
      */
-    public Builder<T, ID_T> setFormData(List<Pair<String, String>> formData) {
-      this.formData = formData;
+    public Builder<T, ID_T> setFormDataItem(Pair<String, String> formDataItem) {
+      this.formData.add(formDataItem);
       return this;
     }
 
     /**
      * Set the url encoded form data.
-     * @param urlEncodedFormData the url encoded form data.
+     * @param urlEncodedFormDataItem the url encoded form data item
      * @return Builder
      */
-    public Builder<T, ID_T> setUrlEncodedFormData(List<Pair<String, String>> urlEncodedFormData) {
-      this.urlEncodedFormData = urlEncodedFormData;
+    public Builder<T, ID_T> setUrlEncodedFormDataItem(Pair<String, String> urlEncodedFormDataItem) {
+      this.urlEncodedFormData.add(urlEncodedFormDataItem);
       return this;
     }
 
@@ -246,16 +246,6 @@ public class RestRequest<T, ID_T> {
      */
     public Builder<T, ID_T> setHost(String host) {
       this.host = host;
-      return this;
-    }
-
-    /**
-     * The request parameters in the url
-     * @param requestParams the list of params. Names can be repeated to allow for a list of items, etc.
-     * @return this builder.
-     */
-    public Builder<T, ID_T> setRequestParams(List<Pair<String, String>> requestParams) {
-      this.requestParams = requestParams;
       return this;
     }
 
@@ -271,16 +261,6 @@ public class RestRequest<T, ID_T> {
     }
 
     /**
-     * Sets the headers
-     * @param headers the header map.
-     * @return this builder
-     */
-    public Builder<T, ID_T> setHeaders(final Map<String, String> headers) {
-      this.headers = headers;
-      return this;
-    }
-
-    /**
      * Add or overwrite a specified header
      * @param headerName the header name
      * @param headerValue the value
@@ -290,7 +270,7 @@ public class RestRequest<T, ID_T> {
       if(this.headers.containsKey(headerName)) {
         LOG.warn("Overwrite header: " + headerName);
       }
-      this.headers.put(headerName, headerValue);
+      this.headers.computeIfAbsent(headerName, h -> new ArrayList<>()).add(headerValue);
       return this;
     }
 
@@ -336,8 +316,8 @@ public class RestRequest<T, ID_T> {
 
     /**
      * Sets a batch of identifiers
-     * @param identifiers
-     * @return
+     * @param identifiers set of identfiers
+     * @return this builder
      */
     public Builder<T, ID_T> setIdentifierBatch(Set<ID_T> identifiers) {
       this.identifiers = ImmutableSet.copyOf(identifiers);
