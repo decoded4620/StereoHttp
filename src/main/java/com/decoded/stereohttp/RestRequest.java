@@ -1,7 +1,7 @@
 package com.decoded.stereohttp;
 
 import com.google.common.collect.ImmutableSet;
-import javafx.util.Pair;
+import com.decoded.javautil.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
