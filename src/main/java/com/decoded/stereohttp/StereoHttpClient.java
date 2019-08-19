@@ -120,7 +120,7 @@ public class StereoHttpClient {
    * Provides a hook for subclasses to insert logic before (or after) the Requester, reactor, and connection factory are
    * constructed.
    */
-  protected void initialize() {
+  protected synchronized void initialize() {
     if (!initialized) {
       debugIf(() -> "Initializing StereoHttpClient");
       // OVERRIDE and set configurations here
@@ -238,7 +238,7 @@ public class StereoHttpClient {
             throw new IllegalArgumentException(
                 "Client current state expected to be " + ClientState.STARTING + " or " + ClientState.ONLINE + " but " + "was: " + getState());
           }
-
+          break;
         case TERMINATED:
           if (getState() == ClientState.SHUTTING_DOWN) {
             this.state = state;
@@ -258,7 +258,7 @@ public class StereoHttpClient {
   /**
    * Terminate the client.
    */
-  public void terminate() {
+  public synchronized void terminate() {
     debugIf(() -> "Terminate Stereo Http Client");
     setState(ClientState.SHUTTING_DOWN);
     try {
@@ -278,13 +278,13 @@ public class StereoHttpClient {
    * @return a boolean
    */
   public boolean canStart() {
-    return state == ClientState.OFFLINE || state == ClientState.TERMINATED;
+    return state != ClientState.STARTING && state != ClientState.ONLINE;
   }
 
   /**
    * Start the non-blocking client on our executor thread.
    */
-  public void start() {
+  public synchronized void start() {
     debugIf(() -> "Starting StereoHttpClient");
     initialize();
 
