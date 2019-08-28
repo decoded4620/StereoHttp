@@ -89,6 +89,25 @@ public class StereoHttpClient {
     }
   }
 
+  private static void infoIf(Supplier<String> message) {
+    if (LOG.isInfoEnabled()) {
+      LOG.info(message.get());
+    }
+  }
+
+  /**
+   * Returns a new stereo http task of the specified type
+   *
+   * @param tClass  the class
+   * @param timeout a timeout value
+   * @param <T>     the type
+   *
+   * @return a Stereo http task.
+   */
+  public <T> StereoHttpTask<T> task(Class<T> tClass, int timeout) {
+    return new StereoHttpTask<>(this, timeout);
+  }
+
   /**
    * Set the NIO client outbound connection maximum
    *
@@ -187,25 +206,26 @@ public class StereoHttpClient {
     if (this.state != state) {
       switch (state) {
         case OFFLINE:
-          if (getState() == ClientState.TERMINATED || getState() == ClientState.ERROR) {
+          if (this.state == ClientState.TERMINATED || this.state == ClientState.ERROR) {
             this.state = state;
           } else {
             throw new IllegalArgumentException(
                 "Client current state expected to be " + ClientState.TERMINATED + " or " + ClientState.ERROR + " but "
-                    + "was: " + getState());
+                    + "was: " + this.state);
           }
           break;
         case ERROR:
-          if (getState() == ClientState.STARTING || getState() == ClientState.ONLINE) {
+          if (this.state == ClientState.STARTING || this.state == ClientState.ONLINE) {
             LOG.error("State was set to ERROR", new RuntimeException("Error"));
             this.state = state;
           } else {
             throw new IllegalArgumentException(
-                "Client current state expected to be " + ClientState.STARTING + " or " + ClientState.ONLINE + " but " + "was: " + getState());
+                "Client current state expected to be " + ClientState.STARTING + " or " + ClientState.ONLINE + " but "
+                    + "was: " + this.state);
           }
           break;
         case ONLINE:
-          if (getState() == ClientState.STARTING) {
+          if (this.state == ClientState.STARTING) {
             this.state = state;
             // create the outgoing requests for all schemes.
             // call the request consumer for each caller to read to satisfy the created request.
@@ -214,37 +234,38 @@ public class StereoHttpClient {
             pendingRequestsByScheme.clear();
           } else {
             throw new IllegalArgumentException(
-                "Client current state expected to be " + ClientState.STARTING + " but was: " + getState());
+                "Client current state expected to be " + ClientState.STARTING + " but was: " + this.state);
           }
           break;
         case STARTING:
           if (!initialized) {
-            throw new IllegalStateException(
-                "Cannot start the StereoHttpClient before calling the protected initialize() method");
+            initialize();
           }
 
-          if (getState() == ClientState.OFFLINE) {
+          if (this.state == ClientState.OFFLINE || this.state == ClientState.TERMINATED) {
             this.state = state;
           } else {
             throw new IllegalArgumentException(
-                "Client current state expected to be " + ClientState.OFFLINE + " but was: " + getState());
+                "Client current state expected to be " + ClientState.OFFLINE + " or " + ClientState.TERMINATED + ", "
+                    + "but was: " + this.state);
           }
 
           break;
         case SHUTTING_DOWN:
-          if (getState() == ClientState.STARTING || getState() == ClientState.ONLINE) {
+          if (this.state == ClientState.STARTING || this.state == ClientState.ONLINE) {
             this.state = state;
           } else {
             throw new IllegalArgumentException(
-                "Client current state expected to be " + ClientState.STARTING + " or " + ClientState.ONLINE + " but " + "was: " + getState());
+                "Client current state expected to be " + ClientState.STARTING + " or " + ClientState.ONLINE + " but " +
+                    "was: " + this.state);
           }
           break;
         case TERMINATED:
-          if (getState() == ClientState.SHUTTING_DOWN) {
+          if (this.state == ClientState.SHUTTING_DOWN) {
             this.state = state;
           } else {
             throw new IllegalArgumentException(
-                "Client current state expected to be " + ClientState.SHUTTING_DOWN + " but was: " + getState());
+                "Client current state expected to be " + ClientState.SHUTTING_DOWN + " but was: " + this.state);
           }
           break;
         default:
@@ -278,7 +299,7 @@ public class StereoHttpClient {
    * @return a boolean
    */
   public boolean canStart() {
-    return state != ClientState.STARTING && state != ClientState.ONLINE;
+    return state == ClientState.OFFLINE;
   }
 
   /**
@@ -286,8 +307,6 @@ public class StereoHttpClient {
    */
   public synchronized void start() {
     debugIf(() -> "Starting StereoHttpClient");
-    initialize();
-
     setState(ClientState.STARTING);
 
     // Run the I/O reactor in a separate thread
@@ -297,13 +316,15 @@ public class StereoHttpClient {
       try {
         // Ready to go!
         ioReactor.execute(ioEventDispatch);
+        LOG.info("Reactor started: " + ioReactor.getStatus());
       } catch (ConnectionClosedException ex) {
-        LOG.error("IO Reactor execution was disconnected", ex);
+        LOG.error("IO Reactor execution was disconnected: " + ioReactor.getStatus(), ex);
+
       } catch (final InterruptedIOException ex) {
-        LOG.error("IO Reactor execution was interrupted", ex);
-        setState(ClientState.TERMINATED);
+        LOG.error("IO Reactor execution was interrupted: " + ioReactor.getStatus(), ex);
+        terminate();
       } catch (final IOException ex) {
-        LOG.error("IO Reactor execution encountered an I/O error: ", ex);
+        LOG.error("IO Reactor execution encountered an I/O error: " + ioReactor.getStatus(), ex);
         setState(ClientState.ERROR);
       }
     });
@@ -322,10 +343,10 @@ public class StereoHttpClient {
   /**
    * Handles outgoing requests.
    *
-   * @param scheme          the scheme
-   * @param host            the host
-   * @param port            the port
-   * @param request         the request
+   * @param scheme                      the scheme
+   * @param host                        the host
+   * @param port                        the port
+   * @param request                     the request
    * @param stereoRequestCreateCallback the consumer of the new generated request.
    */
   private void handleOutgoingRequest(Http.Scheme scheme,
@@ -340,7 +361,7 @@ public class StereoHttpClient {
     if (this.state == ClientState.ONLINE) {
       debugIf(() -> "Stereo is building an NIO request");
       stereoRequestCreateCallback.accept(newStereoRequest(httpHost, request));
-    } else if (getState() == ClientState.OFFLINE || getState() == ClientState.STARTING) {
+    } else if (this.state == ClientState.OFFLINE || this.state == ClientState.STARTING) {
       LOG.warn("Stereo is offline! Staging request " + request.getRequestLine().getUri());
       pendingRequestsByScheme.computeIfAbsent(scheme, s -> new ArrayList<>())
           .add(new PendingRequest(httpHost, request, stereoRequestCreateCallback));
@@ -352,18 +373,17 @@ public class StereoHttpClient {
   /**
    * Write data in a request, using entities
    *
-   * @param scheme                   the scheme to write
-   * @param restRequest              the rest request.
-   * @param requestConsumer          the consumer
+   * @param scheme          the scheme to write
+   * @param restRequest     the rest request.
+   * @param requestConsumer the consumer
    */
-  private void write(Http.Scheme scheme,
-      RestRequest<?, ?> restRequest,
-      Consumer<StereoHttpRequest> requestConsumer) {
+  private void write(Http.Scheme scheme, RestRequest<?, ?> restRequest, Consumer<StereoHttpRequest> requestConsumer) {
+    infoIf(() -> "Capturing outgoing request >> " + restRequest.getRequestMethod()
+        .name() + " " + scheme + "://" + restRequest.getHost() + ':' + restRequest.getPort() + restRequest.getRequestUri());
     String host = restRequest.getHost();
     int port = restRequest.getPort();
     RequestMethod method = restRequest.getRequestMethod();
     String uri = restRequest.getRequestUri();
-
 
     if (RequestMethod.isWriteMethod(method)) {
       BasicHttpEntityEnclosingRequest httpRequest = new BasicHttpEntityEnclosingRequest(method.methodName(), uri);
@@ -371,38 +391,39 @@ public class StereoHttpClient {
       Map<String, List<String>> headers = restRequest.getHeaders();
       headers.forEach((k, v) -> v.forEach(hV -> httpRequest.addHeader(k, hV)));
 
-      restRequest.getCookies().forEach(cookie -> httpRequest.addHeader("Cookie", cookie.getKey()+"="+cookie.getValue()));
+      restRequest.getCookies()
+          .forEach(cookie -> httpRequest.addHeader("Cookie", cookie.getKey() + "=" + cookie.getValue()));
 
-      if(!restRequest.getFormData().isEmpty()) {
-        LOG.info("Submitting Form Data");
+      if (!restRequest.getFormData().isEmpty()) {
+        infoIf(() -> "Submitting Form Data");
         final MultipartEntityBuilder builder = MultipartEntityBuilder.create();
         restRequest.getFormData().forEach(pair -> builder.addTextBody(pair.getKey(), pair.getValue()));
         final HttpEntity entity = builder.build();
         httpRequest.setEntity(entity);
-      } else if(!restRequest.getUrlEncodedFormData().isEmpty()) {
+      } else if (!restRequest.getUrlEncodedFormData().isEmpty()) {
         List<BasicNameValuePair> pairs = new ArrayList<>();
-        restRequest.getUrlEncodedFormData().forEach(pair -> pairs.add(new BasicNameValuePair(pair.getKey(), pair.getValue())));
+        restRequest.getUrlEncodedFormData()
+            .forEach(pair -> pairs.add(new BasicNameValuePair(pair.getKey(), pair.getValue())));
         try {
           UrlEncodedFormEntity entity = new UrlEncodedFormEntity(pairs);
           httpRequest.setEntity(entity);
-        } catch(UnsupportedEncodingException ex) {
+        } catch (UnsupportedEncodingException ex) {
           LOG.warn("Not supported url encoded form data", ex);
         }
       } else {
         Optional.ofNullable(restRequest.getBody()).ifPresent(serializedEntity -> {
           try {
-              LOG.info("Submitting String Entity Data");
-              if (StringUtils.isEmpty(restRequest.getBody())) {
-                httpRequest.setEntity(new StringEntity(""));
-              } else {
-                httpRequest.setEntity(new StringEntity(restRequest.getBody()));
-              }
+            LOG.info("Submitting String Entity Data");
+            if (StringUtils.isEmpty(restRequest.getBody())) {
+              httpRequest.setEntity(new StringEntity(""));
+            } else {
+              httpRequest.setEntity(new StringEntity(restRequest.getBody()));
+            }
           } catch (UnsupportedEncodingException ex) {
             LOG.warn("Not supported!", ex);
           }
         });
       }
-
 
       handleOutgoingRequest(scheme, host, port, httpRequest, requestConsumer);
     } else {
@@ -417,11 +438,9 @@ public class StereoHttpClient {
    * @param scheme          the scheme
    * @param requestConsumer a consumer for the constructed request.
    */
-  private void read(Http.Scheme scheme,
-      RestRequest restRequest,
-      Consumer<StereoHttpRequest> requestConsumer) {
+  private void read(Http.Scheme scheme, RestRequest restRequest, Consumer<StereoHttpRequest> requestConsumer) {
 
-    debugIf(() -> "Capturing outgoing request >> " + restRequest.getRequestMethod()
+    infoIf(() -> "Capturing outgoing request >> " + restRequest.getRequestMethod()
         .name() + " " + scheme + "://" + restRequest.getHost() + ':' + restRequest.getPort() + restRequest.getRequestUri());
     final BasicHttpRequest request = new BasicHttpRequest(restRequest.getRequestMethod().methodName(),
         restRequest.getRequestUri());
@@ -449,19 +468,19 @@ public class StereoHttpClient {
   /**
    * Write to a host
    *
-   * @param restRequest              a rest request.
-   * @param requestConsumer          consumer for the created request.
+   * @param restRequest     a rest request.
+   * @param requestConsumer consumer for the created request.
    *
    * @see StereoHttpClient#stereoReadRequest(RestRequest, Consumer)
    */
-  public void stereoWriteRequest(RestRequest restRequest,
-      Consumer<StereoHttpRequest> requestConsumer) {
+  public void stereoWriteRequest(RestRequest restRequest, Consumer<StereoHttpRequest> requestConsumer) {
     write(Http.Scheme.HTTP, restRequest, requestConsumer);
   }
 
   /**
    * Https Immutable read object used to handled non-blocking io
-   * @param restRequest the request.
+   *
+   * @param restRequest     the request.
    * @param requestConsumer a consumer of the created request.
    */
   public void stereoSecureRead(RestRequest restRequest, Consumer<StereoHttpRequest> requestConsumer) {
@@ -474,8 +493,7 @@ public class StereoHttpClient {
    * @param restRequest     request
    * @param requestConsumer a consumer of the created request.
    */
-  public void stereoSecureWrite(RestRequest restRequest,
-      Consumer<StereoHttpRequest> requestConsumer) {
+  public void stereoSecureWrite(RestRequest restRequest, Consumer<StereoHttpRequest> requestConsumer) {
     write(Http.Scheme.HTTPS, restRequest, requestConsumer);
   }
 

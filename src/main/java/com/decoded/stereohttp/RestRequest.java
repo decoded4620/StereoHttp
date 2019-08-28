@@ -30,6 +30,7 @@ public class RestRequest<T, ID_T> {
   private final List<Pair<String, String>> urlEncodedFormData;
   private final List<Pair<String, String>> cookies;
   private final Map<String, List<String>> headers;
+  private final boolean secure;
   /**
    * Constructor
    *
@@ -47,6 +48,7 @@ public class RestRequest<T, ID_T> {
     formData = builder.formData;
     urlEncodedFormData = builder.urlEncodedFormData;
     cookies = builder.cookies;
+    secure = builder.secure;
   }
 
   /**
@@ -74,6 +76,14 @@ public class RestRequest<T, ID_T> {
    */
   public String getRequestPath() {
     return requestPath;
+  }
+
+  /**
+   * Returns <code>true</code> for secure requests.
+   * @return a boolean
+   */
+  public boolean isSecure() {
+    return secure;
   }
 
   /**
@@ -189,6 +199,7 @@ public class RestRequest<T, ID_T> {
     private List<Pair<String, String>> urlEncodedFormData = new ArrayList<>();
     private Map<String, List<String>> headers = new HashMap<>();
     private List<Pair<String, String>> cookies = new ArrayList<>();
+    private boolean secure;
     private RequestMethod requestMethod = RequestMethod.GET;
     private Set<ID_T> identifiers = Collections.emptySet();
     private Class<T> tClass;
@@ -321,6 +332,16 @@ public class RestRequest<T, ID_T> {
      */
     public Builder<T, ID_T> setIdentifierBatch(Set<ID_T> identifiers) {
       this.identifiers = ImmutableSet.copyOf(identifiers);
+      return this;
+    }
+
+    /**
+     * Set the security of the request (https vs. http)
+     * @param secure true if secure
+     * @return this builder.
+     */
+    public Builder<T, ID_T> setSecure(final boolean secure) {
+      this.secure = secure;
       return this;
     }
 

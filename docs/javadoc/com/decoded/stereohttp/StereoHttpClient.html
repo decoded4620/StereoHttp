@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -265,6 +265,13 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i12" class="altColor">
+<td class="colFirst"><code>&lt;T&gt;&nbsp;<a href="../../../com/decoded/stereohttp/StereoHttpTask.html" title="class in com.decoded.stereohttp">StereoHttpTask</a>&lt;T&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpClient.html#task-java.lang.Class-int-">task</a></span>(java.lang.Class&lt;T&gt;&nbsp;tClass,
+    int&nbsp;timeout)</code>
+<div class="block">Returns a new stereo http task of the specified type</div>
+</td>
+</tr>
+<tr id="i13" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpClient.html#terminate--">terminate</a></span>()</code>
 <div class="block">Terminate the client.</div>
@@ -310,6 +317,26 @@ public&nbsp;StereoHttpClient(java.util.concurrent.ExecutorService&nbsp;executorS
 <!--   -->
 </a>
 <h3>Method Detail</h3>
+<a name="task-java.lang.Class-int-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>task</h4>
+<pre>public&nbsp;&lt;T&gt;&nbsp;<a href="../../../com/decoded/stereohttp/StereoHttpTask.html" title="class in com.decoded.stereohttp">StereoHttpTask</a>&lt;T&gt;&nbsp;task(java.lang.Class&lt;T&gt;&nbsp;tClass,
+                                  int&nbsp;timeout)</pre>
+<div class="block">Returns a new stereo http task of the specified type</div>
+<dl>
+<dt><span class="paramLabel">Type Parameters:</span></dt>
+<dd><code>T</code> - the type</dd>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>tClass</code> - the class</dd>
+<dd><code>timeout</code> - a timeout value</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>a Stereo http task.</dd>
+</dl>
+</li>
+</ul>
 <a name="setMaxOutboundConnections-int-">
 <!--   -->
 </a>

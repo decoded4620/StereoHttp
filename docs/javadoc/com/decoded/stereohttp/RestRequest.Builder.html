@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -228,6 +228,12 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i12" class="altColor">
+<td class="colFirst"><code><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a>&lt;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">T</a>,<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html#setSecure-boolean-">setSecure</a></span>(boolean&nbsp;secure)</code>
+<div class="block">Set the security of the request (https vs.</div>
+</td>
+</tr>
+<tr id="i13" class="rowColor">
 <td class="colFirst"><code><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a>&lt;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">T</a>,<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html#setUrlEncodedFormDataItem-com.decoded.javautil.Pair-">setUrlEncodedFormDataItem</a></span>(com.decoded.javautil.Pair&lt;java.lang.String,java.lang.String&gt;&nbsp;urlEncodedFormDataItem)</code>
 <div class="block">Set the url encoded form data.</div>
@@ -468,6 +474,22 @@ extends java.lang.Object</pre>
 <dd><code>identifiers</code> - set of identfiers</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>this builder</dd>
+</dl>
+</li>
+</ul>
+<a name="setSecure-boolean-">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>setSecure</h4>
+<pre>public&nbsp;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp">RestRequest.Builder</a>&lt;<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">T</a>,<a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="type parameter in RestRequest.Builder">ID_T</a>&gt;&nbsp;setSecure(boolean&nbsp;secure)</pre>
+<div class="block">Set the security of the request (https vs. http)</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>secure</code> - true if secure</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>this builder.</dd>
 </dl>
 </li>
 </ul>
