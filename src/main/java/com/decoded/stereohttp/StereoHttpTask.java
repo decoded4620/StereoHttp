@@ -308,7 +308,7 @@ public class StereoHttpTask<T> {
       long start = requestStarted();
       Feedback<X> feedback = new Feedback<>();
 
-      debugIf(LOG, () -> taskLabel() + "StereoHttp Request Enqueue: [" + httpRequest.getRequestUri() + "]");
+      debugIf(LOG, () -> taskLabel() + "StereoHttp Request running: [" + httpRequest.getRequestUri() + "]");
 
       // response callback
       Consumer<StereoResponse> httpResponseCallback = (stereoResponse) -> {

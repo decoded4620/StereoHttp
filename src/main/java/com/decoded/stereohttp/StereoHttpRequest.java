@@ -75,11 +75,15 @@ public class StereoHttpRequest {
 
   // helper for efficient debug logging
   private static void debugIf(Supplier<String> message) {
-    if(LOG.isErrorEnabled()) {
+    if(LOG.isDebugEnabled()) {
       LOG.debug(message.get());
     }
   }
-
+  private static void infoIf(Supplier<String> message) {
+    if(LOG.isInfoEnabled()) {
+      LOG.info(message.get());
+    }
+  }
   /**
    * Consume the response
    * @param responseConsumer a consumer.
@@ -101,7 +105,7 @@ public class StereoHttpRequest {
       throw new IllegalStateException("RestRequest was null, which means the http client was not properly initialized.");
     }
 
-    debugIf(() -> "execute http request to " + httpHost.getHostName() + ", " + httpRequest.toString());
+    infoIf(() -> "executing NIO async http request @[" + httpHost.getSchemeName() + "://" + httpHost.getHostName() + ":" + httpHost.getPort() + "]");
     requester.execute(new BasicAsyncRequestProducer(httpHost, httpRequest), responseConsumer, pool, coreContext,
                       callback);
     return this;

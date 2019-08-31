@@ -141,7 +141,7 @@ public class StereoHttpClient {
    */
   protected synchronized void initialize() {
     if (!initialized) {
-      debugIf(() -> "Initializing StereoHttpClient");
+      infoIf(() -> "Initializing StereoHttpClient");
       // OVERRIDE and set configurations here
       // TODO - @barcher decide which request elements are important.
       // Create HTTP requester
@@ -280,7 +280,7 @@ public class StereoHttpClient {
    * Terminate the client.
    */
   public synchronized void terminate() {
-    debugIf(() -> "Terminate Stereo Http Client");
+    infoIf(() -> "Terminate Stereo Http Client");
     setState(ClientState.SHUTTING_DOWN);
     try {
       LOG.warn("Shutting down I/O reactor");
@@ -306,20 +306,19 @@ public class StereoHttpClient {
    * Start the non-blocking client on our executor thread.
    */
   public synchronized void start() {
-    debugIf(() -> "Starting StereoHttpClient");
+    infoIf(() -> "Starting StereoHttpClient");
     setState(ClientState.STARTING);
 
     // Run the I/O reactor in a separate thread
     executorService.submit(() -> {
       setState(ClientState.ONLINE);
-      debugIf(() -> "Stereo Client is online");
+      infoIf(() -> "Stereo Client is online");
       try {
         // Ready to go!
         ioReactor.execute(ioEventDispatch);
-        LOG.info("Reactor started: " + ioReactor.getStatus());
+        debugIf(() -> "Reactor started: " + ioReactor.getStatus());
       } catch (ConnectionClosedException ex) {
         LOG.error("IO Reactor execution was disconnected: " + ioReactor.getStatus(), ex);
-
       } catch (final InterruptedIOException ex) {
         LOG.error("IO Reactor execution was interrupted: " + ioReactor.getStatus(), ex);
         terminate();
@@ -354,12 +353,11 @@ public class StereoHttpClient {
       int port,
       BasicHttpRequest request,
       Consumer<StereoHttpRequest> stereoRequestCreateCallback) {
-    debugIf(() -> "handling outgoing request: " + request.getRequestLine()
-        .getMethod() + " " + host + ":" + port + request.getRequestLine().getUri());
+    infoIf(() -> ">> handling outgoing request: [" + request.getRequestLine()
+        .getMethod() + "] " + host + ":" + port + request.getRequestLine().getUri());
     final HttpHost httpHost = new HttpHost(host, port, scheme.getProtocol());
 
     if (this.state == ClientState.ONLINE) {
-      debugIf(() -> "Stereo is building an NIO request");
       stereoRequestCreateCallback.accept(newStereoRequest(httpHost, request));
     } else if (this.state == ClientState.OFFLINE || this.state == ClientState.STARTING) {
       LOG.warn("Stereo is offline! Staging request " + request.getRequestLine().getUri());
@@ -378,7 +376,7 @@ public class StereoHttpClient {
    * @param requestConsumer the consumer
    */
   private void write(Http.Scheme scheme, RestRequest<?, ?> restRequest, Consumer<StereoHttpRequest> requestConsumer) {
-    infoIf(() -> "Capturing outgoing request >> " + restRequest.getRequestMethod()
+    infoIf(() -> "Capturing outgoing write request >> " + restRequest.getRequestMethod()
         .name() + " " + scheme + "://" + restRequest.getHost() + ':' + restRequest.getPort() + restRequest.getRequestUri());
     String host = restRequest.getHost();
     int port = restRequest.getPort();
@@ -395,7 +393,7 @@ public class StereoHttpClient {
           .forEach(cookie -> httpRequest.addHeader("Cookie", cookie.getKey() + "=" + cookie.getValue()));
 
       if (!restRequest.getFormData().isEmpty()) {
-        infoIf(() -> "Submitting Form Data");
+        infoIf(() -> "write: submitting Form Data");
         final MultipartEntityBuilder builder = MultipartEntityBuilder.create();
         restRequest.getFormData().forEach(pair -> builder.addTextBody(pair.getKey(), pair.getValue()));
         final HttpEntity entity = builder.build();
@@ -413,11 +411,12 @@ public class StereoHttpClient {
       } else {
         Optional.ofNullable(restRequest.getBody()).ifPresent(serializedEntity -> {
           try {
-            LOG.info("Submitting String Entity Data");
-            if (StringUtils.isEmpty(restRequest.getBody())) {
+            if (StringUtils.isEmpty(serializedEntity)) {
+              infoIf(() -> "No Entity Data...");
               httpRequest.setEntity(new StringEntity(""));
             } else {
-              httpRequest.setEntity(new StringEntity(restRequest.getBody()));
+              infoIf(() -> "Submitting Entity Data: " + serializedEntity.getBytes().length + " bytes");
+              httpRequest.setEntity(new StringEntity(serializedEntity));
             }
           } catch (UnsupportedEncodingException ex) {
             LOG.warn("Not supported!", ex);
@@ -440,7 +439,7 @@ public class StereoHttpClient {
    */
   private void read(Http.Scheme scheme, RestRequest restRequest, Consumer<StereoHttpRequest> requestConsumer) {
 
-    infoIf(() -> "Capturing outgoing request >> " + restRequest.getRequestMethod()
+    infoIf(() -> "Capturing outgoing read request >> " + restRequest.getRequestMethod()
         .name() + " " + scheme + "://" + restRequest.getHost() + ':' + restRequest.getPort() + restRequest.getRequestUri());
     final BasicHttpRequest request = new BasicHttpRequest(restRequest.getRequestMethod().methodName(),
         restRequest.getRequestUri());
@@ -523,7 +522,7 @@ public class StereoHttpClient {
      * @param requestConsumer consumer to call when request is constructed
      */
     public PendingRequest(HttpHost host, BasicHttpRequest request, Consumer<StereoHttpRequest> requestConsumer) {
-      debugIf(() -> "Pending Request to " + host.toHostString() + ", " + request.toString());
+      infoIf(() -> "Created Pending Request to " + host.toHostString() + ", " + request.toString());
       this.host = host;
       this.request = request;
       this.requestConsumer = requestConsumer;
