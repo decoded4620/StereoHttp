@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -36,7 +36,8 @@ var activeTableTab = "activeTableTab";
 <!--   -->
 </a>
 <ul class="navList" title="Navigation">
-<li><a href="../../../com/decoded/stereohttp/package-summary.html">Package</a></li>
+<li><a href="../../../overview-summary.html">Overview</a></li>
+<li><a href="package-summary.html">Package</a></li>
 <li class="navBarCell1Rev">Class</li>
 <li><a href="package-tree.html">Tree</a></li>
 <li><a href="../../../deprecated-list.html">Deprecated</a></li>
@@ -47,7 +48,7 @@ var activeTableTab = "activeTableTab";
 <div class="subNav">
 <ul class="navList">
 <li><a href="../../../com/decoded/stereohttp/StereoHttpClient.ClientState.html" title="enum in com.decoded.stereohttp"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li><a href="../../../com/decoded/stereohttp/StereoHttpTask.html" title="class in com.decoded.stereohttp"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../../../com/decoded/stereohttp/StereoHttpRequest.Builder.html" title="class in com.decoded.stereohttp"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../../index.html?com/decoded/stereohttp/StereoHttpRequest.html" target="_top">Frames</a></li>
@@ -71,15 +72,15 @@ var activeTableTab = "activeTableTab";
 <div>
 <ul class="subNavList">
 <li>Summary:&nbsp;</li>
-<li>Nested&nbsp;|&nbsp;</li>
+<li><a href="#nested.class.summary">Nested</a>&nbsp;|&nbsp;</li>
 <li>Field&nbsp;|&nbsp;</li>
-<li>Constr&nbsp;|&nbsp;</li>
+<li><a href="#constructor.summary">Constr</a>&nbsp;|&nbsp;</li>
 <li><a href="#method.summary">Method</a></li>
 </ul>
 <ul class="subNavList">
 <li>Detail:&nbsp;</li>
 <li>Field&nbsp;|&nbsp;</li>
-<li>Constr&nbsp;|&nbsp;</li>
+<li><a href="#constructor.detail">Constr</a>&nbsp;|&nbsp;</li>
 <li><a href="#method.detail">Method</a></li>
 </ul>
 </div>
@@ -90,31 +91,75 @@ var activeTableTab = "activeTableTab";
 <!-- ======== START OF CLASS DATA ======== -->
 <div class="header">
 <div class="subTitle">com.decoded.stereohttp</div>
-<h2 title="Class StereoHttpRequest" class="title">Class StereoHttpRequest</h2>
+<h2 title="Class StereoHttpRequest" class="title">Class StereoHttpRequest&lt;T,ID_T&gt;</h2>
 </div>
 <div class="contentContainer">
 <ul class="inheritance">
 <li>java.lang.Object</li>
 <li>
 <ul class="inheritance">
-<li>com.decoded.stereohttp.StereoHttpRequest</li>
+<li>com.decoded.stereohttp.StereoHttpRequest&lt;T,ID_T&gt;</li>
 </ul>
 </li>
 </ul>
 <div class="description">
 <ul class="blockList">
 <li class="blockList">
+<dl>
+<dt><span class="paramLabel">Type Parameters:</span></dt>
+<dd><code>T</code> - the model type we are requesting.</dd>
+</dl>
 <hr>
 <br>
-<pre>public class <span class="typeNameLabel">StereoHttpRequest</span>
+<pre>public class <span class="typeNameLabel">StereoHttpRequest&lt;T,ID_T&gt;</span>
 extends java.lang.Object</pre>
-<div class="block">The internal class used by Stereo to make http requests on its non-blocking Http Client.</div>
+<div class="block">StereoHttpRequest That can be passed to <a href="../../../com/decoded/stereohttp/StereoHttpTask.html" title="class in com.decoded.stereohttp"><code>StereoHttpTask</code></a> of type T</div>
 </li>
 </ul>
 </div>
 <div class="summary">
 <ul class="blockList">
 <li class="blockList">
+<!-- ======== NESTED CLASS SUMMARY ======== -->
+<ul class="blockList">
+<li class="blockList"><a name="nested.class.summary">
+<!--   -->
+</a>
+<h3>Nested Class Summary</h3>
+<table class="memberSummary" border="0" cellpadding="3" cellspacing="0" summary="Nested Class Summary table, listing nested classes, and an explanation">
+<caption><span>Nested Classes</span><span class="tabEnd">&nbsp;</span></caption>
+<tr>
+<th class="colFirst" scope="col">Modifier and Type</th>
+<th class="colLast" scope="col">Class and Description</th>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>static class&nbsp;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpRequest.Builder.html" title="class in com.decoded.stereohttp">StereoHttpRequest.Builder</a>&lt;<a href="../../../com/decoded/stereohttp/StereoHttpRequest.Builder.html" title="type parameter in StereoHttpRequest.Builder">T</a>,<a href="../../../com/decoded/stereohttp/StereoHttpRequest.Builder.html" title="type parameter in StereoHttpRequest.Builder">ID_T</a>&gt;</span></code>
+<div class="block">The StereoHttpRequest Builder</div>
+</td>
+</tr>
+</table>
+</li>
+</ul>
+<!-- ======== CONSTRUCTOR SUMMARY ======== -->
+<ul class="blockList">
+<li class="blockList"><a name="constructor.summary">
+<!--   -->
+</a>
+<h3>Constructor Summary</h3>
+<table class="memberSummary" border="0" cellpadding="3" cellspacing="0" summary="Constructor Summary table, listing constructors, and an explanation">
+<caption><span>Constructors</span><span class="tabEnd">&nbsp;</span></caption>
+<tr>
+<th class="colOne" scope="col">Constructor and Description</th>
+</tr>
+<tr class="altColor">
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpRequest.html#StereoHttpRequest-com.decoded.stereohttp.StereoHttpRequest.Builder-">StereoHttpRequest</a></span>(<a href="../../../com/decoded/stereohttp/StereoHttpRequest.Builder.html" title="class in com.decoded.stereohttp">StereoHttpRequest.Builder</a>&lt;<a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="type parameter in StereoHttpRequest">T</a>,<a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="type parameter in StereoHttpRequest">ID_T</a>&gt;&nbsp;builder)</code>
+<div class="block">Constructor</div>
+</td>
+</tr>
+</table>
+</li>
+</ul>
 <!-- ========== METHOD SUMMARY =========== -->
 <ul class="blockList">
 <li class="blockList"><a name="method.summary">
@@ -128,36 +173,81 @@ extends java.lang.Object</pre>
 <th class="colLast" scope="col">Method and Description</th>
 </tr>
 <tr id="i0" class="altColor">
-<td class="colFirst"><code><a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp">StereoHttpRequest</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpRequest.html#andThen-java.lang.Runnable-">andThen</a></span>(java.lang.Runnable&nbsp;afterMapper)</code>
-<div class="block">After everything (error or not) do this.</div>
+<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpRequest.html#getBody--">getBody</a></span>()</code>
+<div class="block">Returns the body of the request.</div>
 </td>
 </tr>
 <tr id="i1" class="rowColor">
-<td class="colFirst"><code><a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp">StereoHttpRequest</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpRequest.html#cancelling-java.lang.Runnable-">cancelling</a></span>(java.lang.Runnable&nbsp;cancellationMapper)</code>
-<div class="block">When the response is cancelled, if the cancellation mapper is set
- it will be called.</div>
+<td class="colFirst"><code>java.util.List&lt;com.decoded.javautil.Pair&lt;java.lang.String,java.lang.String&gt;&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpRequest.html#getCookies--">getCookies</a></span>()</code>
+<div class="block">Returns the list of cookies.</div>
 </td>
 </tr>
 <tr id="i2" class="altColor">
-<td class="colFirst"><code><a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp">StereoHttpRequest</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpRequest.html#exceptionally-java.util.function.Consumer-">exceptionally</a></span>(java.util.function.Consumer&lt;java.lang.Exception&gt;&nbsp;exceptionMapper)</code>
-<div class="block">When the response fails, if the error mapper is set
- it will be called with the exception.</div>
+<td class="colFirst"><code>java.util.List&lt;com.decoded.javautil.Pair&lt;java.lang.String,java.lang.String&gt;&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpRequest.html#getFormData--">getFormData</a></span>()</code>
+<div class="block">Form Data</div>
 </td>
 </tr>
 <tr id="i3" class="rowColor">
-<td class="colFirst"><code><a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp">StereoHttpRequest</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpRequest.html#map-java.util.function.Consumer-">map</a></span>(java.util.function.Consumer&lt;<a href="../../../com/decoded/stereohttp/StereoResponse.html" title="interface in com.decoded.stereohttp">StereoResponse</a>&gt;&nbsp;mapper)</code>
-<div class="block">When the response is available, if the completion mapper is set
- it will be called with the response.</div>
+<td class="colFirst"><code>java.util.Map&lt;java.lang.String,java.util.List&lt;java.lang.String&gt;&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpRequest.html#getHeaders--">getHeaders</a></span>()</code>
+<div class="block">the headers</div>
 </td>
 </tr>
 <tr id="i4" class="altColor">
-<td class="colFirst"><code><a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp">StereoHttpRequest</a></code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpRequest.html#setResponseConsumer-org.apache.http.nio.protocol.AbstractAsyncResponseConsumer-">setResponseConsumer</a></span>(org.apache.http.nio.protocol.AbstractAsyncResponseConsumer&lt;org.apache.http.HttpResponse&gt;&nbsp;responseConsumer)</code>
-<div class="block">Consume the response</div>
+<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpRequest.html#getHost--">getHost</a></span>()</code>
+<div class="block">The Host.</div>
+</td>
+</tr>
+<tr id="i5" class="rowColor">
+<td class="colFirst"><code>java.util.Set&lt;<a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="type parameter in StereoHttpRequest">ID_T</a>&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpRequest.html#getIdentifiers--">getIdentifiers</a></span>()</code>
+<div class="block">The Request Identifiers.</div>
+</td>
+</tr>
+<tr id="i6" class="altColor">
+<td class="colFirst"><code>int</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpRequest.html#getPort--">getPort</a></span>()</code>
+<div class="block">The port</div>
+</td>
+</tr>
+<tr id="i7" class="rowColor">
+<td class="colFirst"><code><a href="../../../com/decoded/stereohttp/RequestMethod.html" title="enum in com.decoded.stereohttp">RequestMethod</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpRequest.html#getRequestMethod--">getRequestMethod</a></span>()</code>
+<div class="block"><a href="../../../com/decoded/stereohttp/RequestMethod.html" title="enum in com.decoded.stereohttp"><code>RequestMethod</code></a> for the request.</div>
+</td>
+</tr>
+<tr id="i8" class="altColor">
+<td class="colFirst"><code>java.util.List&lt;com.decoded.javautil.Pair&lt;java.lang.String,java.lang.String&gt;&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpRequest.html#getRequestParams--">getRequestParams</a></span>()</code>
+<div class="block">Returns the request parameters.</div>
+</td>
+</tr>
+<tr id="i9" class="rowColor">
+<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpRequest.html#getRequestPath--">getRequestPath</a></span>()</code>
+<div class="block">The request URI, including params.</div>
+</td>
+</tr>
+<tr id="i10" class="altColor">
+<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpRequest.html#getRequestUri--">getRequestUri</a></span>()</code>
+<div class="block">Get Request Uri</div>
+</td>
+</tr>
+<tr id="i11" class="rowColor">
+<td class="colFirst"><code>java.util.List&lt;com.decoded.javautil.Pair&lt;java.lang.String,java.lang.String&gt;&gt;</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpRequest.html#getUrlEncodedFormData--">getUrlEncodedFormData</a></span>()</code>
+<div class="block">The form data if the content is url encoded form data.</div>
+</td>
+</tr>
+<tr id="i12" class="altColor">
+<td class="colFirst"><code>boolean</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpRequest.html#isSecure--">isSecure</a></span>()</code>
+<div class="block">Returns <code>true</code> for secure requests.</div>
 </td>
 </tr>
 </table>
@@ -176,92 +266,213 @@ extends java.lang.Object</pre>
 <div class="details">
 <ul class="blockList">
 <li class="blockList">
+<!-- ========= CONSTRUCTOR DETAIL ======== -->
+<ul class="blockList">
+<li class="blockList"><a name="constructor.detail">
+<!--   -->
+</a>
+<h3>Constructor Detail</h3>
+<a name="StereoHttpRequest-com.decoded.stereohttp.StereoHttpRequest.Builder-">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>StereoHttpRequest</h4>
+<pre>public&nbsp;StereoHttpRequest(<a href="../../../com/decoded/stereohttp/StereoHttpRequest.Builder.html" title="class in com.decoded.stereohttp">StereoHttpRequest.Builder</a>&lt;<a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="type parameter in StereoHttpRequest">T</a>,<a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="type parameter in StereoHttpRequest">ID_T</a>&gt;&nbsp;builder)</pre>
+<div class="block">Constructor</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>builder</code> - a <a href="../../../com/decoded/stereohttp/StereoHttpRequest.Builder.html" title="class in com.decoded.stereohttp"><code>StereoHttpRequest.Builder</code></a> of type T</dd>
+</dl>
+</li>
+</ul>
+</li>
+</ul>
 <!-- ============ METHOD DETAIL ========== -->
 <ul class="blockList">
 <li class="blockList"><a name="method.detail">
 <!--   -->
 </a>
 <h3>Method Detail</h3>
-<a name="setResponseConsumer-org.apache.http.nio.protocol.AbstractAsyncResponseConsumer-">
+<a name="getRequestParams--">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>setResponseConsumer</h4>
-<pre>public&nbsp;<a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp">StereoHttpRequest</a>&nbsp;setResponseConsumer(org.apache.http.nio.protocol.AbstractAsyncResponseConsumer&lt;org.apache.http.HttpResponse&gt;&nbsp;responseConsumer)</pre>
-<div class="block">Consume the response</div>
+<h4>getRequestParams</h4>
+<pre>public&nbsp;java.util.List&lt;com.decoded.javautil.Pair&lt;java.lang.String,java.lang.String&gt;&gt;&nbsp;getRequestParams()</pre>
+<div class="block">Returns the request parameters.</div>
 <dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>responseConsumer</code> - a consumer.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>this <a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp"><code>StereoHttpRequest</code></a></dd>
+<dd>a Map of string parameter names to string parameter values.</dd>
 </dl>
 </li>
 </ul>
-<a name="map-java.util.function.Consumer-">
+<a name="getCookies--">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>map</h4>
-<pre>public&nbsp;<a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp">StereoHttpRequest</a>&nbsp;map(java.util.function.Consumer&lt;<a href="../../../com/decoded/stereohttp/StereoResponse.html" title="interface in com.decoded.stereohttp">StereoResponse</a>&gt;&nbsp;mapper)</pre>
-<div class="block">When the response is available, if the completion mapper is set
- it will be called with the response.</div>
+<h4>getCookies</h4>
+<pre>public&nbsp;java.util.List&lt;com.decoded.javautil.Pair&lt;java.lang.String,java.lang.String&gt;&gt;&nbsp;getCookies()</pre>
+<div class="block">Returns the list of cookies.</div>
 <dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>mapper</code> - a Consumer to accept the response.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>this <a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp"><code>StereoHttpRequest</code></a></dd>
+<dd>a list of name of value pair.</dd>
 </dl>
 </li>
 </ul>
-<a name="exceptionally-java.util.function.Consumer-">
+<a name="getRequestPath--">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>exceptionally</h4>
-<pre>public&nbsp;<a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp">StereoHttpRequest</a>&nbsp;exceptionally(java.util.function.Consumer&lt;java.lang.Exception&gt;&nbsp;exceptionMapper)</pre>
-<div class="block">When the response fails, if the error mapper is set
- it will be called with the exception.</div>
+<h4>getRequestPath</h4>
+<pre>public&nbsp;java.lang.String&nbsp;getRequestPath()</pre>
+<div class="block">The request URI, including params.</div>
 <dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>exceptionMapper</code> - a Consumer to accept the error.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>this <a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp"><code>StereoHttpRequest</code></a></dd>
+<dd>a String</dd>
 </dl>
 </li>
 </ul>
-<a name="cancelling-java.lang.Runnable-">
+<a name="isSecure--">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>cancelling</h4>
-<pre>public&nbsp;<a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp">StereoHttpRequest</a>&nbsp;cancelling(java.lang.Runnable&nbsp;cancellationMapper)</pre>
-<div class="block">When the response is cancelled, if the cancellation mapper is set
- it will be called.</div>
+<h4>isSecure</h4>
+<pre>public&nbsp;boolean&nbsp;isSecure()</pre>
+<div class="block">Returns <code>true</code> for secure requests.</div>
 <dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>cancellationMapper</code> - a Consumer to accept the cancellation.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>this <a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp"><code>StereoHttpRequest</code></a></dd>
+<dd>a boolean</dd>
 </dl>
 </li>
 </ul>
-<a name="andThen-java.lang.Runnable-">
+<a name="getRequestUri--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getRequestUri</h4>
+<pre>public&nbsp;java.lang.String&nbsp;getRequestUri()</pre>
+<div class="block">Get Request Uri</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>String</dd>
+</dl>
+</li>
+</ul>
+<a name="getRequestMethod--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getRequestMethod</h4>
+<pre>public&nbsp;<a href="../../../com/decoded/stereohttp/RequestMethod.html" title="enum in com.decoded.stereohttp">RequestMethod</a>&nbsp;getRequestMethod()</pre>
+<div class="block"><a href="../../../com/decoded/stereohttp/RequestMethod.html" title="enum in com.decoded.stereohttp"><code>RequestMethod</code></a> for the request.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>RequestMethod</dd>
+</dl>
+</li>
+</ul>
+<a name="getBody--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getBody</h4>
+<pre>public&nbsp;java.lang.String&nbsp;getBody()</pre>
+<div class="block">Returns the body of the request.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>a String.</dd>
+</dl>
+</li>
+</ul>
+<a name="getFormData--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getFormData</h4>
+<pre>public&nbsp;java.util.List&lt;com.decoded.javautil.Pair&lt;java.lang.String,java.lang.String&gt;&gt;&nbsp;getFormData()</pre>
+<div class="block">Form Data</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>a set of form elements with name value pairs.</dd>
+</dl>
+</li>
+</ul>
+<a name="getUrlEncodedFormData--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getUrlEncodedFormData</h4>
+<pre>public&nbsp;java.util.List&lt;com.decoded.javautil.Pair&lt;java.lang.String,java.lang.String&gt;&gt;&nbsp;getUrlEncodedFormData()</pre>
+<div class="block">The form data if the content is url encoded form data.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>a list of Pair of strings</dd>
+</dl>
+</li>
+</ul>
+<a name="getHost--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getHost</h4>
+<pre>public&nbsp;java.lang.String&nbsp;getHost()</pre>
+<div class="block">The Host.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>a String.</dd>
+</dl>
+</li>
+</ul>
+<a name="getPort--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getPort</h4>
+<pre>public&nbsp;int&nbsp;getPort()</pre>
+<div class="block">The port</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>an int.</dd>
+</dl>
+</li>
+</ul>
+<a name="getHeaders--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getHeaders</h4>
+<pre>public&nbsp;java.util.Map&lt;java.lang.String,java.util.List&lt;java.lang.String&gt;&gt;&nbsp;getHeaders()</pre>
+<div class="block">the headers</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>map of headers.</dd>
+</dl>
+</li>
+</ul>
+<a name="getIdentifiers--">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
-<h4>andThen</h4>
-<pre>public&nbsp;<a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp">StereoHttpRequest</a>&nbsp;andThen(java.lang.Runnable&nbsp;afterMapper)</pre>
-<div class="block">After everything (error or not) do this.</div>
+<h4>getIdentifiers</h4>
+<pre>public&nbsp;java.util.Set&lt;<a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="type parameter in StereoHttpRequest">ID_T</a>&gt;&nbsp;getIdentifiers()</pre>
+<div class="block">The Request Identifiers.</div>
 <dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>afterMapper</code> - a Runnable to run after.</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
-<dd>this <a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp"><code>StereoHttpRequest</code></a></dd>
+<dd>a set of one or more identifiers used to identify a rest resource entity</dd>
 </dl>
 </li>
 </ul>
@@ -281,7 +492,8 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <ul class="navList" title="Navigation">
-<li><a href="../../../com/decoded/stereohttp/package-summary.html">Package</a></li>
+<li><a href="../../../overview-summary.html">Overview</a></li>
+<li><a href="package-summary.html">Package</a></li>
 <li class="navBarCell1Rev">Class</li>
 <li><a href="package-tree.html">Tree</a></li>
 <li><a href="../../../deprecated-list.html">Deprecated</a></li>
@@ -292,7 +504,7 @@ extends java.lang.Object</pre>
 <div class="subNav">
 <ul class="navList">
 <li><a href="../../../com/decoded/stereohttp/StereoHttpClient.ClientState.html" title="enum in com.decoded.stereohttp"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li><a href="../../../com/decoded/stereohttp/StereoHttpTask.html" title="class in com.decoded.stereohttp"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../../../com/decoded/stereohttp/StereoHttpRequest.Builder.html" title="class in com.decoded.stereohttp"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../../index.html?com/decoded/stereohttp/StereoHttpRequest.html" target="_top">Frames</a></li>
@@ -316,15 +528,15 @@ extends java.lang.Object</pre>
 <div>
 <ul class="subNavList">
 <li>Summary:&nbsp;</li>
-<li>Nested&nbsp;|&nbsp;</li>
+<li><a href="#nested.class.summary">Nested</a>&nbsp;|&nbsp;</li>
 <li>Field&nbsp;|&nbsp;</li>
-<li>Constr&nbsp;|&nbsp;</li>
+<li><a href="#constructor.summary">Constr</a>&nbsp;|&nbsp;</li>
 <li><a href="#method.summary">Method</a></li>
 </ul>
 <ul class="subNavList">
 <li>Detail:&nbsp;</li>
 <li>Field&nbsp;|&nbsp;</li>
-<li>Constr&nbsp;|&nbsp;</li>
+<li><a href="#constructor.detail">Constr</a>&nbsp;|&nbsp;</li>
 <li><a href="#method.detail">Method</a></li>
 </ul>
 </div>

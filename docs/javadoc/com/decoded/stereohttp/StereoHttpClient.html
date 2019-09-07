@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -36,7 +36,8 @@ var activeTableTab = "activeTableTab";
 <!--   -->
 </a>
 <ul class="navList" title="Navigation">
-<li><a href="../../../com/decoded/stereohttp/package-summary.html">Package</a></li>
+<li><a href="../../../overview-summary.html">Overview</a></li>
+<li><a href="package-summary.html">Package</a></li>
 <li class="navBarCell1Rev">Class</li>
 <li><a href="package-tree.html">Tree</a></li>
 <li><a href="../../../deprecated-list.html">Deprecated</a></li>
@@ -46,7 +47,7 @@ var activeTableTab = "activeTableTab";
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li><a href="../../../com/decoded/stereohttp/RequestMethod.html" title="enum in com.decoded.stereohttp"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
 <li><a href="../../../com/decoded/stereohttp/StereoHttpClient.ClientState.html" title="enum in com.decoded.stereohttp"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
@@ -117,7 +118,8 @@ extends java.lang.Object</pre>
  <pre>
  StereoHttpClient stereoHttpClient;
 
- this.stereoHttpClient.stereoReadRequest("ec2-18-188-69-78.us-east-2.compute.amazonaws.com", 9000, RequestMethod.GET,
+ this.stereoHttpClient.stereoApacheNIOReadRequest("ec2-18-188-69-78.us-east-2.compute.amazonaws.com", 9000,
+ RequestMethod.GET,
  "/api/identity/users/get?urn=urn:yourdomain:user:1 23", request -&lt; {
          request.map(stereoResponse -&lt; stereoResponse.getMaybeContent()
              .ifPresent(content -&lt; LOG.info("Stereo Response Content: " + content)))
@@ -170,7 +172,9 @@ extends java.lang.Object</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpClient.html#StereoHttpClient-java.util.concurrent.ExecutorService-">StereoHttpClient</a></span>(java.util.concurrent.ExecutorService&nbsp;executorService)</code>&nbsp;</td>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpClient.html#StereoHttpClient-com.decoded.stereohttp.engine.ApacheNIOHttpEngine-com.decoded.stereohttp.engine.ApacheHttpAsyncClientEngine-java.util.concurrent.ExecutorService-">StereoHttpClient</a></span>(<a href="../../../com/decoded/stereohttp/engine/ApacheNIOHttpEngine.html" title="class in com.decoded.stereohttp.engine">ApacheNIOHttpEngine</a>&nbsp;nioHttpEngine,
+                <a href="../../../com/decoded/stereohttp/engine/ApacheHttpAsyncClientEngine.html" title="class in com.decoded.stereohttp.engine">ApacheHttpAsyncClientEngine</a>&nbsp;asyncClientEngine,
+                java.util.concurrent.ExecutorService&nbsp;executorService)</code>&nbsp;</td>
 </tr>
 </table>
 </li>
@@ -213,65 +217,45 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i4" class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpClient.html#setMaxOutboundConnections-int-">setMaxOutboundConnections</a></span>(int&nbsp;maxOutboundConnections)</code>
-<div class="block">Set the NIO client outbound connection maximum</div>
-</td>
-</tr>
-<tr id="i5" class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpClient.html#setMaxOutboundConnectionsPerRoute-int-">setMaxOutboundConnectionsPerRoute</a></span>(int&nbsp;maxOutboundConnectionsPerRoute)</code>
-<div class="block">The max output connections per route</div>
-</td>
-</tr>
-<tr id="i6" class="altColor">
 <td class="colFirst"><code>protected void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpClient.html#setState-com.decoded.stereohttp.StereoHttpClient.ClientState-">setState</a></span>(<a href="../../../com/decoded/stereohttp/StereoHttpClient.ClientState.html" title="enum in com.decoded.stereohttp">StereoHttpClient.ClientState</a>&nbsp;state)</code>
 <div class="block">Set the state of the client.</div>
 </td>
 </tr>
-<tr id="i7" class="rowColor">
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpClient.html#start--">start</a></span>()</code>
 <div class="block">Start the non-blocking client on our executor thread.</div>
 </td>
 </tr>
+<tr id="i6" class="altColor">
+<td class="colFirst"><code><a href="../../../com/decoded/stereohttp/StereoHttpRequestHandler.html" title="class in com.decoded.stereohttp">StereoHttpRequestHandler</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpClient.html#stereoApacheAsyncReadRequest-com.decoded.stereohttp.StereoHttpRequest-">stereoApacheAsyncReadRequest</a></span>(<a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp">StereoHttpRequest</a>&nbsp;stereoHttpRequest)</code>&nbsp;</td>
+</tr>
+<tr id="i7" class="rowColor">
+<td class="colFirst"><code><a href="../../../com/decoded/stereohttp/StereoHttpRequestHandler.html" title="class in com.decoded.stereohttp">StereoHttpRequestHandler</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpClient.html#stereoApacheAsyncWriteRequest-com.decoded.stereohttp.StereoHttpRequest-">stereoApacheAsyncWriteRequest</a></span>(<a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp">StereoHttpRequest</a>&nbsp;stereoHttpRequest)</code>&nbsp;</td>
+</tr>
 <tr id="i8" class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpClient.html#stereoReadRequest-com.decoded.stereohttp.RestRequest-java.util.function.Consumer-">stereoReadRequest</a></span>(<a href="../../../com/decoded/stereohttp/RestRequest.html" title="class in com.decoded.stereohttp">RestRequest</a>&nbsp;restRequest,
-                 java.util.function.Consumer&lt;<a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp">StereoHttpRequest</a>&gt;&nbsp;stereoRequestConsumer)</code>
-<div class="block">Http Immutable read object used to handled non-blocking io</div>
+<td class="colFirst"><code><a href="../../../com/decoded/stereohttp/StereoHttpRequestHandler.html" title="class in com.decoded.stereohttp">StereoHttpRequestHandler</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpClient.html#stereoApacheNIOReadRequest-com.decoded.stereohttp.StereoHttpRequest-">stereoApacheNIOReadRequest</a></span>(<a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp">StereoHttpRequest</a>&nbsp;stereoHttpRequest)</code>
+<div class="block">Http Immutable apacheNIORead object used to handled non-blocking io</div>
 </td>
 </tr>
 <tr id="i9" class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpClient.html#stereoSecureRead-com.decoded.stereohttp.RestRequest-java.util.function.Consumer-">stereoSecureRead</a></span>(<a href="../../../com/decoded/stereohttp/RestRequest.html" title="class in com.decoded.stereohttp">RestRequest</a>&nbsp;restRequest,
-                java.util.function.Consumer&lt;<a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp">StereoHttpRequest</a>&gt;&nbsp;requestConsumer)</code>
-<div class="block">Https Immutable read object used to handled non-blocking io</div>
-</td>
-</tr>
-<tr id="i10" class="altColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpClient.html#stereoSecureWrite-com.decoded.stereohttp.RestRequest-java.util.function.Consumer-">stereoSecureWrite</a></span>(<a href="../../../com/decoded/stereohttp/RestRequest.html" title="class in com.decoded.stereohttp">RestRequest</a>&nbsp;restRequest,
-                 java.util.function.Consumer&lt;<a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp">StereoHttpRequest</a>&gt;&nbsp;requestConsumer)</code>
-<div class="block">Https Immutable read object used to handled non-blocking io</div>
-</td>
-</tr>
-<tr id="i11" class="rowColor">
-<td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpClient.html#stereoWriteRequest-com.decoded.stereohttp.RestRequest-java.util.function.Consumer-">stereoWriteRequest</a></span>(<a href="../../../com/decoded/stereohttp/RestRequest.html" title="class in com.decoded.stereohttp">RestRequest</a>&nbsp;restRequest,
-                  java.util.function.Consumer&lt;<a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp">StereoHttpRequest</a>&gt;&nbsp;requestConsumer)</code>
+<td class="colFirst"><code><a href="../../../com/decoded/stereohttp/StereoHttpRequestHandler.html" title="class in com.decoded.stereohttp">StereoHttpRequestHandler</a></code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpClient.html#stereoApacheNIOWriteRequest-com.decoded.stereohttp.StereoHttpRequest-">stereoApacheNIOWriteRequest</a></span>(<a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp">StereoHttpRequest</a>&nbsp;stereoHttpRequest)</code>
 <div class="block">Write to a host</div>
 </td>
 </tr>
-<tr id="i12" class="altColor">
+<tr id="i10" class="altColor">
 <td class="colFirst"><code>&lt;T&gt;&nbsp;<a href="../../../com/decoded/stereohttp/StereoHttpTask.html" title="class in com.decoded.stereohttp">StereoHttpTask</a>&lt;T&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpClient.html#task-java.lang.Class-int-">task</a></span>(java.lang.Class&lt;T&gt;&nbsp;tClass,
     int&nbsp;timeout)</code>
 <div class="block">Returns a new stereo http task of the specified type</div>
 </td>
 </tr>
-<tr id="i13" class="rowColor">
+<tr id="i11" class="rowColor">
 <td class="colFirst"><code>void</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpClient.html#terminate--">terminate</a></span>()</code>
 <div class="block">Terminate the client.</div>
@@ -299,14 +283,16 @@ extends java.lang.Object</pre>
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="StereoHttpClient-java.util.concurrent.ExecutorService-">
+<a name="StereoHttpClient-com.decoded.stereohttp.engine.ApacheNIOHttpEngine-com.decoded.stereohttp.engine.ApacheHttpAsyncClientEngine-java.util.concurrent.ExecutorService-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>StereoHttpClient</h4>
 <pre>@Inject
-public&nbsp;StereoHttpClient(java.util.concurrent.ExecutorService&nbsp;executorService)</pre>
+public&nbsp;StereoHttpClient(<a href="../../../com/decoded/stereohttp/engine/ApacheNIOHttpEngine.html" title="class in com.decoded.stereohttp.engine">ApacheNIOHttpEngine</a>&nbsp;nioHttpEngine,
+                                 <a href="../../../com/decoded/stereohttp/engine/ApacheHttpAsyncClientEngine.html" title="class in com.decoded.stereohttp.engine">ApacheHttpAsyncClientEngine</a>&nbsp;asyncClientEngine,
+                                 java.util.concurrent.ExecutorService&nbsp;executorService)</pre>
 </li>
 </ul>
 </li>
@@ -334,34 +320,6 @@ public&nbsp;StereoHttpClient(java.util.concurrent.ExecutorService&nbsp;executorS
 <dd><code>timeout</code> - a timeout value</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>a Stereo http task.</dd>
-</dl>
-</li>
-</ul>
-<a name="setMaxOutboundConnections-int-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>setMaxOutboundConnections</h4>
-<pre>public&nbsp;void&nbsp;setMaxOutboundConnections(int&nbsp;maxOutboundConnections)</pre>
-<div class="block">Set the NIO client outbound connection maximum</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>maxOutboundConnections</code> - the max connections for simultaneous outbound connections</dd>
-</dl>
-</li>
-</ul>
-<a name="setMaxOutboundConnectionsPerRoute-int-">
-<!--   -->
-</a>
-<ul class="blockList">
-<li class="blockList">
-<h4>setMaxOutboundConnectionsPerRoute</h4>
-<pre>public&nbsp;void&nbsp;setMaxOutboundConnectionsPerRoute(int&nbsp;maxOutboundConnectionsPerRoute)</pre>
-<div class="block">The max output connections per route</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>maxOutboundConnectionsPerRoute</code> - the max connections per route.</dd>
 </dl>
 </li>
 </ul>
@@ -465,70 +423,52 @@ public&nbsp;StereoHttpClient(java.util.concurrent.ExecutorService&nbsp;executorS
 <div class="block">Start the non-blocking client on our executor thread.</div>
 </li>
 </ul>
-<a name="stereoReadRequest-com.decoded.stereohttp.RestRequest-java.util.function.Consumer-">
+<a name="stereoApacheNIOReadRequest-com.decoded.stereohttp.StereoHttpRequest-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>stereoReadRequest</h4>
-<pre>public&nbsp;void&nbsp;stereoReadRequest(<a href="../../../com/decoded/stereohttp/RestRequest.html" title="class in com.decoded.stereohttp">RestRequest</a>&nbsp;restRequest,
-                              java.util.function.Consumer&lt;<a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp">StereoHttpRequest</a>&gt;&nbsp;stereoRequestConsumer)</pre>
-<div class="block">Http Immutable read object used to handled non-blocking io</div>
+<h4>stereoApacheNIOReadRequest</h4>
+<pre>public&nbsp;<a href="../../../com/decoded/stereohttp/StereoHttpRequestHandler.html" title="class in com.decoded.stereohttp">StereoHttpRequestHandler</a>&nbsp;stereoApacheNIOReadRequest(<a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp">StereoHttpRequest</a>&nbsp;stereoHttpRequest)</pre>
+<div class="block">Http Immutable apacheNIORead object used to handled non-blocking io</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>restRequest</code> - the request</dd>
-<dd><code>stereoRequestConsumer</code> - consumer for the created request.</dd>
+<dd><code>stereoHttpRequest</code> - the request</dd>
 </dl>
 </li>
 </ul>
-<a name="stereoWriteRequest-com.decoded.stereohttp.RestRequest-java.util.function.Consumer-">
+<a name="stereoApacheNIOWriteRequest-com.decoded.stereohttp.StereoHttpRequest-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>stereoWriteRequest</h4>
-<pre>public&nbsp;void&nbsp;stereoWriteRequest(<a href="../../../com/decoded/stereohttp/RestRequest.html" title="class in com.decoded.stereohttp">RestRequest</a>&nbsp;restRequest,
-                               java.util.function.Consumer&lt;<a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp">StereoHttpRequest</a>&gt;&nbsp;requestConsumer)</pre>
+<h4>stereoApacheNIOWriteRequest</h4>
+<pre>public&nbsp;<a href="../../../com/decoded/stereohttp/StereoHttpRequestHandler.html" title="class in com.decoded.stereohttp">StereoHttpRequestHandler</a>&nbsp;stereoApacheNIOWriteRequest(<a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp">StereoHttpRequest</a>&nbsp;stereoHttpRequest)</pre>
 <div class="block">Write to a host</div>
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>restRequest</code> - a rest request.</dd>
-<dd><code>requestConsumer</code> - consumer for the created request.</dd>
+<dd><code>stereoHttpRequest</code> - a rest request.</dd>
 <dt><span class="seeLabel">See Also:</span></dt>
-<dd><a href="../../../com/decoded/stereohttp/StereoHttpClient.html#stereoReadRequest-com.decoded.stereohttp.RestRequest-java.util.function.Consumer-"><code>stereoReadRequest(RestRequest, Consumer)</code></a></dd>
+<dd><a href="../../../com/decoded/stereohttp/StereoHttpClient.html#stereoApacheNIOReadRequest-com.decoded.stereohttp.StereoHttpRequest-"><code>stereoApacheNIOReadRequest(StereoHttpRequest)</code></a></dd>
 </dl>
 </li>
 </ul>
-<a name="stereoSecureRead-com.decoded.stereohttp.RestRequest-java.util.function.Consumer-">
+<a name="stereoApacheAsyncReadRequest-com.decoded.stereohttp.StereoHttpRequest-">
 <!--   -->
 </a>
 <ul class="blockList">
 <li class="blockList">
-<h4>stereoSecureRead</h4>
-<pre>public&nbsp;void&nbsp;stereoSecureRead(<a href="../../../com/decoded/stereohttp/RestRequest.html" title="class in com.decoded.stereohttp">RestRequest</a>&nbsp;restRequest,
-                             java.util.function.Consumer&lt;<a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp">StereoHttpRequest</a>&gt;&nbsp;requestConsumer)</pre>
-<div class="block">Https Immutable read object used to handled non-blocking io</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>restRequest</code> - the request.</dd>
-<dd><code>requestConsumer</code> - a consumer of the created request.</dd>
-</dl>
+<h4>stereoApacheAsyncReadRequest</h4>
+<pre>public&nbsp;<a href="../../../com/decoded/stereohttp/StereoHttpRequestHandler.html" title="class in com.decoded.stereohttp">StereoHttpRequestHandler</a>&nbsp;stereoApacheAsyncReadRequest(<a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp">StereoHttpRequest</a>&nbsp;stereoHttpRequest)</pre>
 </li>
 </ul>
-<a name="stereoSecureWrite-com.decoded.stereohttp.RestRequest-java.util.function.Consumer-">
+<a name="stereoApacheAsyncWriteRequest-com.decoded.stereohttp.StereoHttpRequest-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
-<h4>stereoSecureWrite</h4>
-<pre>public&nbsp;void&nbsp;stereoSecureWrite(<a href="../../../com/decoded/stereohttp/RestRequest.html" title="class in com.decoded.stereohttp">RestRequest</a>&nbsp;restRequest,
-                              java.util.function.Consumer&lt;<a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp">StereoHttpRequest</a>&gt;&nbsp;requestConsumer)</pre>
-<div class="block">Https Immutable read object used to handled non-blocking io</div>
-<dl>
-<dt><span class="paramLabel">Parameters:</span></dt>
-<dd><code>restRequest</code> - request</dd>
-<dd><code>requestConsumer</code> - a consumer of the created request.</dd>
-</dl>
+<h4>stereoApacheAsyncWriteRequest</h4>
+<pre>public&nbsp;<a href="../../../com/decoded/stereohttp/StereoHttpRequestHandler.html" title="class in com.decoded.stereohttp">StereoHttpRequestHandler</a>&nbsp;stereoApacheAsyncWriteRequest(<a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp">StereoHttpRequest</a>&nbsp;stereoHttpRequest)</pre>
 </li>
 </ul>
 </li>
@@ -547,7 +487,8 @@ public&nbsp;StereoHttpClient(java.util.concurrent.ExecutorService&nbsp;executorS
 <!--   -->
 </a>
 <ul class="navList" title="Navigation">
-<li><a href="../../../com/decoded/stereohttp/package-summary.html">Package</a></li>
+<li><a href="../../../overview-summary.html">Overview</a></li>
+<li><a href="package-summary.html">Package</a></li>
 <li class="navBarCell1Rev">Class</li>
 <li><a href="package-tree.html">Tree</a></li>
 <li><a href="../../../deprecated-list.html">Deprecated</a></li>
@@ -557,7 +498,7 @@ public&nbsp;StereoHttpClient(java.util.concurrent.ExecutorService&nbsp;executorS
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../../com/decoded/stereohttp/RestRequest.Builder.html" title="class in com.decoded.stereohttp"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li><a href="../../../com/decoded/stereohttp/RequestMethod.html" title="enum in com.decoded.stereohttp"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
 <li><a href="../../../com/decoded/stereohttp/StereoHttpClient.ClientState.html" title="enum in com.decoded.stereohttp"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">

@@ -1,162 +1,356 @@
 package com.decoded.stereohttp;
 
-import org.apache.http.HttpHost;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.concurrent.FutureCallback;
-import org.apache.http.impl.nio.pool.BasicNIOConnPool;
-import org.apache.http.nio.protocol.AbstractAsyncResponseConsumer;
-import org.apache.http.nio.protocol.BasicAsyncRequestProducer;
-import org.apache.http.nio.protocol.BasicAsyncResponseConsumer;
-import org.apache.http.nio.protocol.HttpAsyncRequester;
-import org.apache.http.protocol.HttpCoreContext;
+import com.google.common.collect.ImmutableSet;
+import com.decoded.javautil.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.util.*;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 
 /**
- * The internal class used by Stereo to make http requests on its non-blocking Http Client.
+ * StereoHttpRequest That can be passed to {@link StereoHttpTask} of type T
+ *
+ * @param <T> the model type we are requesting.
  */
-public class StereoHttpRequest {
+public class StereoHttpRequest<T, ID_T> {
   private static final Logger LOG = LoggerFactory.getLogger(StereoHttpRequest.class);
-  private final HttpCoreContext coreContext;
-  private final HttpHost httpHost;
-  private final HttpRequest httpRequest;
-  private final BasicNIOConnPool pool;
-  private final HttpAsyncRequester requester;
 
-  private FutureCallback<HttpResponse> callback;
-
-  private List<Consumer<StereoResponse>> completionMappers = new ArrayList<>();
-  private List<Consumer<Exception>> errorMappers = new ArrayList<>();
-  private List<Runnable> cancellationMappers = new ArrayList<>();
-  private List<Runnable> afterMappers = new ArrayList<>();
-  private AbstractAsyncResponseConsumer<HttpResponse> responseConsumer = new BasicAsyncResponseConsumer();
+  private final String host;
+  private final int port;
+  private final RequestMethod requestMethod;
+  private final String body;
+  private final String requestPath;
+  private final Set<ID_T> identifiers;
+  private final List<Pair<String, String>> requestParams;
+  private final List<Pair<String, String>> formData;
+  private final List<Pair<String, String>> urlEncodedFormData;
+  private final List<Pair<String, String>> cookies;
+  private final Map<String, List<String>> headers;
+  private final boolean secure;
+  /**
+   * Constructor
+   *
+   * @param builder a {@link Builder} of type T
+   */
+  public StereoHttpRequest(Builder<T, ID_T> builder) {
+    identifiers = builder.identifiers;
+    headers = builder.headers;
+    host = builder.host;
+    port = builder.port;
+    body = builder.body;
+    requestMethod = builder.requestMethod;
+    requestPath = builder.requestPath;
+    requestParams = builder.requestParams;
+    formData = builder.formData;
+    urlEncodedFormData = builder.urlEncodedFormData;
+    cookies = builder.cookies;
+    secure = builder.secure;
+  }
 
   /**
-   * Construct an NIO Reuest
+   * Returns the request parameters.
    *
-   * @param pool        a {@link BasicNIOConnPool} for outgoing connection requests
-   * @param requester   the {@link HttpAsyncRequester}
-   * @param httpHost    the {@link HttpHost}
-   * @param httpRequest the {@link HttpRequest}
+   * @return a Map of string parameter names to string parameter values.
    */
-  StereoHttpRequest(BasicNIOConnPool pool,
-                           HttpAsyncRequester requester,
-                           HttpHost httpHost,
-                           HttpRequest httpRequest
-  ) {
-    this.pool = pool;
-    this.requester = requester;
-    this.httpHost = httpHost;
-    this.httpRequest = httpRequest;
-    this.coreContext = HttpCoreContext.create();
-    this.callback = new FutureCallback<HttpResponse>() {
-        public void completed(final HttpResponse response) {
-        debugIf(() -> "StereoHttpRequest completed: " + response.getStatusLine().getStatusCode());
-        completionMappers.forEach(consumer -> consumer.accept(new StereoResponseImpl(response)));
+  public List<Pair<String, String>> getRequestParams() {
+    return requestParams;
+  }
+
+  /**
+   * Returns the list of cookies.
+   * @return a list of name of value pair.
+   */
+  public List<Pair<String, String>> getCookies() {
+    return cookies;
+  }
+
+
+  /**
+   * The request URI, including params.
+   *
+   * @return a String
+   */
+  public String getRequestPath() {
+    return requestPath;
+  }
+
+  /**
+   * Returns <code>true</code> for secure requests.
+   * @return a boolean
+   */
+  public boolean isSecure() {
+    return secure;
+  }
+
+  /**
+   * Get Request Uri
+   * @return String
+   */
+  public String getRequestUri() {
+    return requestPath + getRequestParameters();
+  }
+
+  private String getRequestParameters() {
+    if (!requestParams.isEmpty()) {
+      StringBuilder paramsBuilder = new StringBuilder("?");
+      requestParams.forEach(pair -> {
+        if (paramsBuilder.length() > 1) {
+          paramsBuilder.append("&");
+        }
+        String correctedV;
+        try {
+           correctedV = URLEncoder.encode(pair.getValue(), Charset.defaultCharset().name());
+        } catch (UnsupportedEncodingException ex) {
+          LOG.warn("Key " + pair.getKey() + " could not be encoded!", ex);
+          correctedV = "";
+        }
+        paramsBuilder.append(pair.getKey()).append("=").append(correctedV);
+      });
+
+      return paramsBuilder.toString();
+    }
+    return "";
+  }
+
+  /**
+   * {@link RequestMethod} for the request.
+   *
+   * @return RequestMethod
+   */
+  public RequestMethod getRequestMethod() {
+    return requestMethod;
+  }
+
+  /**
+   * Returns the body of the request.
+   * @return a String.
+   */
+  public String getBody() {
+    return body;
+  }
+
+  /**
+   * Form Data
+   * @return a set of form elements with name value pairs.
+   */
+  public List<Pair<String, String>> getFormData() {
+    return formData;
+  }
+
+  /**
+   * The form data if the content is url encoded form data.
+   * @return a list of Pair of strings
+   */
+  public List<Pair<String, String>> getUrlEncodedFormData() {
+    return urlEncodedFormData;
+  }
+
+  /**
+   * The Host.
+   *
+   * @return a String.
+   */
+  public String getHost() {
+    return host;
+  }
+
+  /**
+   * The port
+   *
+   * @return an int.
+   */
+  public int getPort() {
+    return port;
+  }
+
+  /**
+   * the headers
+   * @return map of headers.
+   */
+  public Map<String, List<String>> getHeaders() {
+    return headers;
+  }
+
+  /**
+   * The Request Identifiers.
+   *
+   * @return a set of one or more identifiers used to identify a rest resource entity
+   */
+  public Set<ID_T> getIdentifiers() {
+    return identifiers;
+  }
+
+  /**
+   * The StereoHttpRequest Builder
+   *
+   * @param <T> the type returned by executing the request.
+   */
+  public static class Builder<T, ID_T> {
+    private String host;
+    private String body;
+    private int port;
+    private String requestPath;
+    private List<Pair<String, String>> requestParams = new ArrayList<>();
+    private List<Pair<String, String>> formData = new ArrayList<>();
+    private List<Pair<String, String>> urlEncodedFormData = new ArrayList<>();
+    private Map<String, List<String>> headers = new HashMap<>();
+    private List<Pair<String, String>> cookies = new ArrayList<>();
+    private boolean secure;
+    private RequestMethod requestMethod = RequestMethod.GET;
+    private Set<ID_T> identifiers = Collections.emptySet();
+    private Class<T> tClass;
+    private Class<ID_T> idClass;
+
+    public Builder(Class<T> tClazz, Class<ID_T> idClazz) {
+      this.tClass = tClazz;
+      this.idClass = idClazz;
+    }
+
+    /**
+     * Sets the request body
+     * @param body the body content
+     * @return this builder
+     */
+    public Builder<T, ID_T> setBody(final String body) {
+      this.body = body;
+      return this;
+    }
+
+    /**
+     * Sets the request cookies
+     * @param cookie the cookie to set
+     * @return this builder
+     */
+    public Builder<T, ID_T> setCookie(Pair<String, String> cookie) {
+      this.cookies.add(cookie);
+      return this;
+    }
+
+    /**
+     * Sets the form data for the request for Multipart forms.
+     * @param formDataItem multipart form data item
+     * @return this builder
+     */
+    public Builder<T, ID_T> setFormDataItem(Pair<String, String> formDataItem) {
+      this.formData.add(formDataItem);
+      return this;
+    }
+
+    /**
+     * Set the url encoded form data.
+     * @param urlEncodedFormDataItem the url encoded form data item
+     * @return Builder
+     */
+    public Builder<T, ID_T> setUrlEncodedFormDataItem(Pair<String, String> urlEncodedFormDataItem) {
+      this.urlEncodedFormData.add(urlEncodedFormDataItem);
+      return this;
+    }
+
+    /**
+     * sets the host
+     * @param host the host url
+     * @return this builder
+     */
+    public Builder<T, ID_T> setHost(String host) {
+      this.host = host;
+      return this;
+    }
+
+    /**
+     * Add a single param to the request params.
+     * @param paramName the name of the param
+     * @param paramValue the value of the param
+     * @return this builder.
+     */
+    public Builder<T, ID_T> addRequestParam(final String paramName, final String paramValue) {
+      this.requestParams.add(new Pair<>(paramName, paramValue));
+      return this;
+    }
+
+    /**
+     * Add or overwrite a specified header
+     * @param headerName the header name
+     * @param headerValue the value
+     * @return this builder.
+     */
+    public Builder<T, ID_T> addHeader(final String headerName, final String headerValue) {
+      if(this.headers.containsKey(headerName)) {
+        LOG.warn("Overwrite header: " + headerName);
       }
-
-      public void failed(final Exception ex) {
-        LOG.info("StereoHttpRequest failed, consumer will handle exception " + ex.getMessage());
-        errorMappers.forEach(consumer -> consumer.accept(ex));
-      }
-
-      public void cancelled() {
-        LOG.info("StereoHttpRequest was cancelled: " + httpRequest.getRequestLine().toString());
-        cancellationMappers.forEach(Runnable::run);
-      }
-    };
-  }
-
-  // helper for efficient debug logging
-  private static void debugIf(Supplier<String> message) {
-    if(LOG.isDebugEnabled()) {
-      LOG.debug(message.get());
-    }
-  }
-  private static void infoIf(Supplier<String> message) {
-    if(LOG.isInfoEnabled()) {
-      LOG.info(message.get());
-    }
-  }
-  /**
-   * Consume the response
-   * @param responseConsumer a consumer.
-   * @return this {@link StereoHttpRequest}
-   */
-  public StereoHttpRequest setResponseConsumer(AbstractAsyncResponseConsumer<HttpResponse> responseConsumer) {
-    this.responseConsumer = responseConsumer;
-    return this;
-  }
-
-  /**
-   * Package private, only called by the HttpClient internally.
-   *
-   * @return this {@link StereoHttpRequest}
-   * @throws IllegalStateException if the http client is not initialized
-   */
-  StereoHttpRequest execute() {
-    if (requester == null) {
-      throw new IllegalStateException("RestRequest was null, which means the http client was not properly initialized.");
+      this.headers.computeIfAbsent(headerName, h -> new ArrayList<>()).add(headerValue);
+      return this;
     }
 
-    infoIf(() -> "executing NIO async http request @[" + httpHost.getSchemeName() + "://" + httpHost.getHostName() + ":" + httpHost.getPort() + "]");
-    requester.execute(new BasicAsyncRequestProducer(httpHost, httpRequest), responseConsumer, pool, coreContext,
-                      callback);
-    return this;
-  }
-
-  /**
-   * When the response is available, if the completion mapper is set
-   * it will be called with the response.
-   *
-   * @param mapper a Consumer to accept the response.
-   * @return this {@link StereoHttpRequest}
-   */
-  public StereoHttpRequest map(Consumer<StereoResponse> mapper) {
-    if(!completionMappers.contains(mapper)) {
-      Optional.ofNullable(mapper).ifPresent(completionMappers::add);
+    /**
+     * Set the request path (after the uri)
+     * @param requestPath the path of the request
+     * @return this builder
+     */
+    public Builder<T, ID_T> setRequestPath(String requestPath) {
+      this.requestPath = requestPath;
+      return this;
     }
-    return this;
-  }
 
-  /**
-   * When the response fails, if the error mapper is set
-   * it will be called with the exception.
-   *
-   * @param exceptionMapper a Consumer to accept the error.
-   * @return this {@link StereoHttpRequest}
-   */
-  public StereoHttpRequest exceptionally(Consumer<Exception> exceptionMapper) {
-    Optional.ofNullable(exceptionMapper).ifPresent(errorMappers::add);
-    return this;
-  }
+    /**
+     * Set The port for the url
+     * @param port a port
+     * @return this builder
+     */
+    public Builder<T, ID_T> setPort(int port) {
+      this.port = port;
+      return this;
+    }
 
-  /**
-   * When the response is cancelled, if the cancellation mapper is set
-   * it will be called.
-   *
-   * @param cancellationMapper a Consumer to accept the cancellation.
-   * @return this {@link StereoHttpRequest}
-   */
-  public StereoHttpRequest cancelling(Runnable cancellationMapper) {
-    Optional.ofNullable(cancellationMapper).ifPresent(cancellationMappers::add);
-    return this;
-  }
+    /**
+     * The {@link RequestMethod}
+     * @param requestMethod a method
+     * @return this builder
+     */
+    public Builder<T, ID_T> setRequestMethod(RequestMethod requestMethod) {
+      this.requestMethod = requestMethod;
+      return this;
+    }
 
-  /**
-   * After everything (error or not) do this.
-   *
-   * @param afterMapper a Runnable to run after.
-   * @return this {@link StereoHttpRequest}
-   */
-  public StereoHttpRequest andThen(Runnable afterMapper) {
-    Optional.ofNullable(afterMapper).ifPresent(afterMappers::add);
-    return this;
+    /**
+     * Set the identifier
+     * @param identifier the id
+     * @return this builder
+     */
+    public Builder<T, ID_T> setIdentifier(ID_T identifier) {
+      this.identifiers = Collections.singleton(identifier);
+      return this;
+    }
+
+    /**
+     * Sets a batch of identifiers
+     * @param identifiers set of identfiers
+     * @return this builder
+     */
+    public Builder<T, ID_T> setIdentifierBatch(Set<ID_T> identifiers) {
+      this.identifiers = ImmutableSet.copyOf(identifiers);
+      return this;
+    }
+
+    /**
+     * Set the security of the request (https vs. http)
+     * @param secure true if secure
+     * @return this builder.
+     */
+    public Builder<T, ID_T> setSecure(final boolean secure) {
+      this.secure = secure;
+      return this;
+    }
+
+    /**
+     * Builds a rest request.
+     * @return a {@link StereoHttpRequest} of type T / ID_T
+     */
+    public StereoHttpRequest<T, ID_T> build() {
+      return new StereoHttpRequest<>(this);
+    }
   }
 }

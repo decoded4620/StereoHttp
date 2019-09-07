@@ -1,38 +1,18 @@
 package com.decoded.stereohttp;
 
 
+import com.decoded.stereohttp.engine.ApacheHttpAsyncClientEngine;
+import com.decoded.stereohttp.engine.ApacheNIOHttpEngine;
 import com.google.inject.Inject;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.http.ConnectionClosedException;
-import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.protocol.RequestAcceptEncoding;
-import org.apache.http.client.protocol.RequestDefaultHeaders;
-import org.apache.http.config.ConnectionConfig;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.impl.nio.DefaultHttpClientIODispatch;
+import org.apache.http.HttpRequest;
 import org.apache.http.impl.nio.pool.BasicNIOConnPool;
-import org.apache.http.impl.nio.reactor.DefaultConnectingIOReactor;
-import org.apache.http.message.BasicHttpEntityEnclosingRequest;
-import org.apache.http.message.BasicHttpRequest;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.nio.protocol.HttpAsyncRequestExecutor;
-import org.apache.http.nio.protocol.HttpAsyncRequester;
 import org.apache.http.nio.reactor.ConnectingIOReactor;
-import org.apache.http.nio.reactor.IOEventDispatch;
-import org.apache.http.nio.reactor.IOReactorException;
-import org.apache.http.protocol.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.io.InterruptedIOException;
-import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 
@@ -46,7 +26,8 @@ import java.util.function.Supplier;
  * <pre>
  * StereoHttpClient stereoHttpClient;
  *
- * this.stereoHttpClient.stereoReadRequest("ec2-18-188-69-78.us-east-2.compute.amazonaws.com", 9000, RequestMethod.GET,
+ * this.stereoHttpClient.stereoApacheNIOReadRequest("ec2-18-188-69-78.us-east-2.compute.amazonaws.com", 9000,
+ * RequestMethod.GET,
  * "/api/identity/users/get?urn=urn:yourdomain:user:1 23", request -&lt; {
  *         request.map(stereoResponse -&lt; stereoResponse.getMaybeContent()
  *             .ifPresent(content -&lt; LOG.info("Stereo Response Content: " + content)))
@@ -63,23 +44,21 @@ public class StereoHttpClient {
   private static final Logger LOG = LoggerFactory.getLogger(StereoHttpClient.class);
 
 
-  // Create client-side I/O reactor
-  private ConnectingIOReactor ioReactor;
-
-  private IOEventDispatch ioEventDispatch;
-  // Create HTTP connection pool
-  private BasicNIOConnPool pool;
-  private HttpAsyncRequester requester;
   private ExecutorService executorService;
-  private int maxOutboundConnectionsPerRoute = 10;
-  private int maxOutboundConnections = 10;
   private ClientState state = ClientState.OFFLINE;
   private Map<Http.Scheme, List<PendingRequest>> pendingRequestsByScheme = new HashMap<>();
+
+  private ApacheNIOHttpEngine nioHttpEngine;
+  private ApacheHttpAsyncClientEngine asyncClientEngine;
 
   private boolean initialized = false;
 
   @Inject
-  public StereoHttpClient(ExecutorService executorService) {
+  public StereoHttpClient(ApacheNIOHttpEngine nioHttpEngine,
+      ApacheHttpAsyncClientEngine asyncClientEngine,
+      ExecutorService executorService) {
+    this.nioHttpEngine = nioHttpEngine;
+    this.asyncClientEngine = asyncClientEngine;
     this.executorService = executorService;
   }
 
@@ -109,24 +88,6 @@ public class StereoHttpClient {
   }
 
   /**
-   * Set the NIO client outbound connection maximum
-   *
-   * @param maxOutboundConnections the max connections for simultaneous outbound connections
-   */
-  public void setMaxOutboundConnections(int maxOutboundConnections) {
-    this.maxOutboundConnections = maxOutboundConnections;
-  }
-
-  /**
-   * The max output connections per route
-   *
-   * @param maxOutboundConnectionsPerRoute the max connections per route.
-   */
-  public void setMaxOutboundConnectionsPerRoute(int maxOutboundConnectionsPerRoute) {
-    this.maxOutboundConnectionsPerRoute = maxOutboundConnectionsPerRoute;
-  }
-
-  /**
    * Returns the executor service that delves out the threads for http requests.
    *
    * @return the executor service.
@@ -142,32 +103,8 @@ public class StereoHttpClient {
   protected synchronized void initialize() {
     if (!initialized) {
       infoIf(() -> "Initializing StereoHttpClient");
-      // OVERRIDE and set configurations here
-      // TODO - @barcher decide which request elements are important.
-      // Create HTTP requester
-      this.requester = new HttpAsyncRequester(HttpProcessorBuilder.create()
-          .add(new RequestContent())
-          .add(new RequestAcceptEncoding())
-          .add(new RequestDefaultHeaders())
-          .add(new RequestTargetHost())
-          .add(new RequestConnControl())
-          .add(new RequestUserAgent(UserAgents.LINUX_JAVA))
-          .add(new RequestExpectContinue(true))
-          .build());
-
-      this.ioEventDispatch = new DefaultHttpClientIODispatch<>(new HttpAsyncRequestExecutor(),
-          ConnectionConfig.DEFAULT);
-      try {
-        this.ioReactor = new DefaultConnectingIOReactor();
-      } catch (IOReactorException ex) {
-        throw new RuntimeException("Cannot connect to the reactor", ex);
-      }
-
-      // TODO - Support SSL in Stereo HTTP https://github.com/decoded4620/StereoHttp/issues/1
-      this.pool = new BasicNIOConnPool(ioReactor, ConnectionConfig.DEFAULT);
-      // Limit total number of connections to just two
-      this.pool.setDefaultMaxPerRoute(maxOutboundConnectionsPerRoute);
-      this.pool.setMaxTotal(maxOutboundConnections);
+      nioHttpEngine.initialize();
+      asyncClientEngine.start();
       initialized = true;
     } else {
       throw new IllegalStateException("Already initialized the Stereo Http Client");
@@ -220,17 +157,16 @@ public class StereoHttpClient {
             this.state = state;
           } else {
             throw new IllegalArgumentException(
-                "Client current state expected to be " + ClientState.STARTING + " or " + ClientState.ONLINE + " but "
-                    + "was: " + this.state);
+                "Client current state expected to be " + ClientState.STARTING + " or " + ClientState.ONLINE + " but " + "was: " + this.state);
           }
           break;
         case ONLINE:
           if (this.state == ClientState.STARTING) {
             this.state = state;
             // create the outgoing requests for all schemes.
-            // call the request consumer for each caller to read to satisfy the created request.
+            // call the request consumer for each caller to apacheNIORead to satisfy the created request.
             pendingRequestsByScheme.forEach((scheme, requests) -> requests.forEach(
-                request -> request.requestConsumer.accept(newStereoRequest(request.host, request.request))));
+                request -> nioHttpEngine.executeNIORequest(request.host, request.nioHttpRequest)));
             pendingRequestsByScheme.clear();
           } else {
             throw new IllegalArgumentException(
@@ -246,8 +182,7 @@ public class StereoHttpClient {
             this.state = state;
           } else {
             throw new IllegalArgumentException(
-                "Client current state expected to be " + ClientState.OFFLINE + " or " + ClientState.TERMINATED + ", "
-                    + "but was: " + this.state);
+                "Client current state expected to be " + ClientState.OFFLINE + " or " + ClientState.TERMINATED + ", " + "but was: " + this.state);
           }
 
           break;
@@ -256,8 +191,7 @@ public class StereoHttpClient {
             this.state = state;
           } else {
             throw new IllegalArgumentException(
-                "Client current state expected to be " + ClientState.STARTING + " or " + ClientState.ONLINE + " but " +
-                    "was: " + this.state);
+                "Client current state expected to be " + ClientState.STARTING + " or " + ClientState.ONLINE + " but " + "was: " + this.state);
           }
           break;
         case TERMINATED:
@@ -282,13 +216,9 @@ public class StereoHttpClient {
   public synchronized void terminate() {
     infoIf(() -> "Terminate Stereo Http Client");
     setState(ClientState.SHUTTING_DOWN);
-    try {
-      LOG.warn("Shutting down I/O reactor");
-      ioReactor.shutdown();
-    } catch (IOException ex) {
-      LOG.warn("IO Reactor may have already shut down");
-    }
 
+    nioHttpEngine.shutdown();
+    asyncClientEngine.stop();
     initialized = false;
     setState(ClientState.TERMINATED);
   }
@@ -313,189 +243,151 @@ public class StereoHttpClient {
     executorService.submit(() -> {
       setState(ClientState.ONLINE);
       infoIf(() -> "Stereo Client is online");
-      try {
-        // Ready to go!
-        ioReactor.execute(ioEventDispatch);
-        debugIf(() -> "Reactor started: " + ioReactor.getStatus());
-      } catch (ConnectionClosedException ex) {
-        LOG.error("IO Reactor execution was disconnected: " + ioReactor.getStatus(), ex);
-      } catch (final InterruptedIOException ex) {
-        LOG.error("IO Reactor execution was interrupted: " + ioReactor.getStatus(), ex);
+
+      if (!nioHttpEngine.start()) {
+        setState(StereoHttpClient.ClientState.ERROR);
         terminate();
-      } catch (final IOException ex) {
-        LOG.error("IO Reactor execution encountered an I/O error: " + ioReactor.getStatus(), ex);
-        setState(ClientState.ERROR);
       }
     });
   }
 
   /**
-   * Perform a read with host and request
+   * Http Immutable apacheNIORead object used to handled non-blocking io
    *
-   * @param httpHost the host.
-   * @param request  the request.
+   * @param stereoHttpRequest the request
    */
-  /* package private */ StereoHttpRequest newStereoRequest(HttpHost httpHost, BasicHttpRequest request) {
-    return new StereoHttpRequest(pool, requester, httpHost, request).execute();
+  public StereoHttpRequestHandler stereoApacheNIOReadRequest(StereoHttpRequest stereoHttpRequest) {
+    if (stereoHttpRequest.isSecure()) {
+      return apacheNIORead(Http.Scheme.HTTPS, stereoHttpRequest);
+    } else {
+      return apacheNIORead(Http.Scheme.HTTP, stereoHttpRequest);
+    }
   }
 
   /**
-   * Handles outgoing requests.
+   * Write to a host
    *
-   * @param scheme                      the scheme
-   * @param host                        the host
-   * @param port                        the port
-   * @param request                     the request
-   * @param stereoRequestCreateCallback the consumer of the new generated request.
+   * @param stereoHttpRequest a rest request.
+   *
+   * @see StereoHttpClient#stereoApacheNIOReadRequest(StereoHttpRequest)
    */
-  private void handleOutgoingRequest(Http.Scheme scheme,
-      String host,
-      int port,
-      BasicHttpRequest request,
-      Consumer<StereoHttpRequest> stereoRequestCreateCallback) {
-    infoIf(() -> ">> handling outgoing request: [" + request.getRequestLine()
+  public StereoHttpRequestHandler stereoApacheNIOWriteRequest(StereoHttpRequest stereoHttpRequest) {
+    if (stereoHttpRequest.isSecure()) {
+      return apacheNIOWrite(Http.Scheme.HTTPS, stereoHttpRequest);
+    } else {
+      return apacheNIOWrite(Http.Scheme.HTTP, stereoHttpRequest);
+    }
+  }
+
+  public StereoHttpRequestHandler stereoApacheAsyncReadRequest(StereoHttpRequest stereoHttpRequest) {
+    if (stereoHttpRequest.isSecure()) {
+      return apacheAsyncRead(Http.Scheme.HTTPS, stereoHttpRequest);
+    } else {
+      return apacheAsyncRead(Http.Scheme.HTTP, stereoHttpRequest);
+    }
+  }
+
+  public StereoHttpRequestHandler stereoApacheAsyncWriteRequest(StereoHttpRequest stereoHttpRequest) {
+    if (stereoHttpRequest.isSecure()) {
+      return apacheAsyncWrite(Http.Scheme.HTTPS, stereoHttpRequest);
+    } else {
+      return apacheAsyncWrite(Http.Scheme.HTTP, stereoHttpRequest);
+    }
+  }
+
+  /**
+   * Creates a new StereoHttpRequestHandler and executes, or stages it.
+   *
+   * @param scheme  the scheme
+   * @param host    the host
+   * @param port    the port
+   * @param request the request
+   */
+  private StereoHttpRequestHandler sendHttpRequest(Http.Scheme scheme, String host, int port, HttpRequest request) {
+    infoIf(() -> ">> sending Apache NIO http request: [" + request.getRequestLine()
         .getMethod() + "] " + host + ":" + port + request.getRequestLine().getUri());
     final HttpHost httpHost = new HttpHost(host, port, scheme.getProtocol());
-
+    final StereoHttpRequestHandler nioHttpRequest = new StereoHttpRequestHandler(request);
     if (this.state == ClientState.ONLINE) {
-      stereoRequestCreateCallback.accept(newStereoRequest(httpHost, request));
+      nioHttpEngine.executeNIORequest(httpHost, nioHttpRequest);
+      return nioHttpRequest;
     } else if (this.state == ClientState.OFFLINE || this.state == ClientState.STARTING) {
       LOG.warn("Stereo is offline! Staging request " + request.getRequestLine().getUri());
       pendingRequestsByScheme.computeIfAbsent(scheme, s -> new ArrayList<>())
-          .add(new PendingRequest(httpHost, request, stereoRequestCreateCallback));
+          .add(new PendingRequest(httpHost, nioHttpRequest));
+
+      return nioHttpRequest;
     } else {
-      throw new IllegalStateException("Cannot invoke read on client when state is: " + this.state);
+      throw new IllegalStateException("Cannot invoke apacheNIORead on client when state is: " + this.state);
     }
   }
 
   /**
    * Write data in a request, using entities
    *
-   * @param scheme          the scheme to write
-   * @param restRequest     the rest request.
-   * @param requestConsumer the consumer
+   * @param scheme            the scheme to apacheNIOWrite
+   * @param stereoHttpRequest the rest request.
    */
-  private void write(Http.Scheme scheme, RestRequest<?, ?> restRequest, Consumer<StereoHttpRequest> requestConsumer) {
-    infoIf(() -> "Capturing outgoing write request >> " + restRequest.getRequestMethod()
-        .name() + " " + scheme + "://" + restRequest.getHost() + ':' + restRequest.getPort() + restRequest.getRequestUri());
-    String host = restRequest.getHost();
-    int port = restRequest.getPort();
-    RequestMethod method = restRequest.getRequestMethod();
-    String uri = restRequest.getRequestUri();
+  private StereoHttpRequestHandler apacheAsyncWrite(Http.Scheme scheme, StereoHttpRequest<?, ?> stereoHttpRequest) {
+    if (RequestMethod.isWriteMethod(stereoHttpRequest.getRequestMethod())) {
+      return asyncClientEngine.executeRequest(scheme, stereoHttpRequest);
+    } else {
+      throw new IllegalArgumentException(
+          "Cannot perform a write to: " + stereoHttpRequest.getRequestUri() + " with method: " + stereoHttpRequest.getRequestMethod());
+    }
+  }
+
+  /**
+   * Build a Stereo Http StereoHttpRequest
+   *
+   * @param stereoHttpRequest the request
+   * @param scheme            the scheme
+   */
+  private StereoHttpRequestHandler apacheAsyncRead(Http.Scheme scheme, StereoHttpRequest stereoHttpRequest) {
+    if (!RequestMethod.isWriteMethod(stereoHttpRequest.getRequestMethod())) {
+      return asyncClientEngine.executeRequest(scheme, stereoHttpRequest);
+    } else {
+      throw new IllegalArgumentException(
+          "Cannot perform a read from: " + stereoHttpRequest.getRequestUri() + " with method: " + stereoHttpRequest.getRequestMethod());
+    }
+  }
+
+  /**
+   * Write data in a request, using entities
+   *
+   * @param scheme            the scheme to apacheNIOWrite
+   * @param stereoHttpRequest the rest request.
+   */
+  private StereoHttpRequestHandler apacheNIOWrite(Http.Scheme scheme, StereoHttpRequest<?, ?> stereoHttpRequest) {
+    infoIf(() -> "Capturing outgoing apacheNIOWrite request >> " + stereoHttpRequest.getRequestMethod()
+        .name() + " " + scheme + "://" + stereoHttpRequest.getHost() + ':' + stereoHttpRequest.getPort() + stereoHttpRequest
+        .getRequestUri());
+    RequestMethod method = stereoHttpRequest.getRequestMethod();
 
     if (RequestMethod.isWriteMethod(method)) {
-      BasicHttpEntityEnclosingRequest httpRequest = new BasicHttpEntityEnclosingRequest(method.methodName(), uri);
-
-      Map<String, List<String>> headers = restRequest.getHeaders();
-      headers.forEach((k, v) -> v.forEach(hV -> httpRequest.addHeader(k, hV)));
-
-      restRequest.getCookies()
-          .forEach(cookie -> httpRequest.addHeader("Cookie", cookie.getKey() + "=" + cookie.getValue()));
-
-      if (!restRequest.getFormData().isEmpty()) {
-        infoIf(() -> "write: submitting Form Data");
-        final MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-        restRequest.getFormData().forEach(pair -> builder.addTextBody(pair.getKey(), pair.getValue()));
-        final HttpEntity entity = builder.build();
-        httpRequest.setEntity(entity);
-      } else if (!restRequest.getUrlEncodedFormData().isEmpty()) {
-        List<BasicNameValuePair> pairs = new ArrayList<>();
-        restRequest.getUrlEncodedFormData()
-            .forEach(pair -> pairs.add(new BasicNameValuePair(pair.getKey(), pair.getValue())));
-        try {
-          UrlEncodedFormEntity entity = new UrlEncodedFormEntity(pairs);
-          httpRequest.setEntity(entity);
-        } catch (UnsupportedEncodingException ex) {
-          LOG.warn("Not supported url encoded form data", ex);
-        }
-      } else {
-        Optional.ofNullable(restRequest.getBody()).ifPresent(serializedEntity -> {
-          try {
-            if (StringUtils.isEmpty(serializedEntity)) {
-              infoIf(() -> "No Entity Data...");
-              httpRequest.setEntity(new StringEntity(""));
-            } else {
-              infoIf(() -> "Submitting Entity Data: " + serializedEntity.getBytes().length + " bytes");
-              httpRequest.setEntity(new StringEntity(serializedEntity));
-            }
-          } catch (UnsupportedEncodingException ex) {
-            LOG.warn("Not supported!", ex);
-          }
-        });
-      }
-
-      handleOutgoingRequest(scheme, host, port, httpRequest, requestConsumer);
+      return sendHttpRequest(scheme, stereoHttpRequest.getHost(), stereoHttpRequest.getPort(),
+          nioHttpEngine.buildWriteRequest(method, stereoHttpRequest));
     } else {
       LOG.error("Request Method " + method.name() + " is not a write method!");
+      throw new IllegalArgumentException("Exception, method is incorrect");
     }
   }
 
   /**
-   * Build a Stereo Http RestRequest
+   * Build a Stereo Http StereoHttpRequest
    *
-   * @param restRequest     the request
-   * @param scheme          the scheme
-   * @param requestConsumer a consumer for the constructed request.
+   * @param stereoHttpRequest the request
+   * @param scheme            the scheme
    */
-  private void read(Http.Scheme scheme, RestRequest restRequest, Consumer<StereoHttpRequest> requestConsumer) {
-
-    infoIf(() -> "Capturing outgoing read request >> " + restRequest.getRequestMethod()
-        .name() + " " + scheme + "://" + restRequest.getHost() + ':' + restRequest.getPort() + restRequest.getRequestUri());
-    final BasicHttpRequest request = new BasicHttpRequest(restRequest.getRequestMethod().methodName(),
-        restRequest.getRequestUri());
-
-    Map<String, String> headers = restRequest.getHeaders();
-    headers.forEach(request::addHeader);
-
-    if (!RequestMethod.isWriteMethod(restRequest.getRequestMethod())) {
-      handleOutgoingRequest(scheme, restRequest.getHost(), restRequest.getPort(), request, requestConsumer);
+  private StereoHttpRequestHandler apacheNIORead(Http.Scheme scheme, StereoHttpRequest stereoHttpRequest) {
+    if (!RequestMethod.isWriteMethod(stereoHttpRequest.getRequestMethod())) {
+      return sendHttpRequest(scheme, stereoHttpRequest.getHost(), stereoHttpRequest.getPort(),
+          nioHttpEngine.buildReadRequest(stereoHttpRequest));
     } else {
-      LOG.error("Request method " + restRequest.getRequestMethod().name() + " is a write request");
+      LOG.error("Request method " + stereoHttpRequest.getRequestMethod().name() + " is a write request");
+      throw new IllegalArgumentException("Request Method is incorrect");
     }
   }
-
-  /**
-   * Http Immutable read object used to handled non-blocking io
-   *
-   * @param restRequest           the request
-   * @param stereoRequestConsumer consumer for the created request.
-   */
-  public void stereoReadRequest(RestRequest restRequest, Consumer<StereoHttpRequest> stereoRequestConsumer) {
-    read(Http.Scheme.HTTP, restRequest, stereoRequestConsumer);
-  }
-
-  /**
-   * Write to a host
-   *
-   * @param restRequest     a rest request.
-   * @param requestConsumer consumer for the created request.
-   *
-   * @see StereoHttpClient#stereoReadRequest(RestRequest, Consumer)
-   */
-  public void stereoWriteRequest(RestRequest restRequest, Consumer<StereoHttpRequest> requestConsumer) {
-    write(Http.Scheme.HTTP, restRequest, requestConsumer);
-  }
-
-  /**
-   * Https Immutable read object used to handled non-blocking io
-   *
-   * @param restRequest     the request.
-   * @param requestConsumer a consumer of the created request.
-   */
-  public void stereoSecureRead(RestRequest restRequest, Consumer<StereoHttpRequest> requestConsumer) {
-    read(Http.Scheme.HTTPS, restRequest, requestConsumer);
-  }
-
-  /**
-   * Https Immutable read object used to handled non-blocking io
-   *
-   * @param restRequest     request
-   * @param requestConsumer a consumer of the created request.
-   */
-  public void stereoSecureWrite(RestRequest restRequest, Consumer<StereoHttpRequest> requestConsumer) {
-    write(Http.Scheme.HTTPS, restRequest, requestConsumer);
-  }
-
 
   /**
    * States that the client can be in. Following the state machine rules stated in the class docs.
@@ -510,22 +402,17 @@ public class StereoHttpClient {
    * If requests are made prior to being online, they are stored in pending request queue.
    */
   private static final class PendingRequest {
-    public HttpHost host;
-    public BasicHttpRequest request;
-    Consumer<StereoHttpRequest> requestConsumer;
+    StereoHttpRequestHandler nioHttpRequest;
+    HttpHost host;
 
     /**
      * Constructor
      *
-     * @param host            host
-     * @param request         request
-     * @param requestConsumer consumer to call when request is constructed
+     * @param nioHttpRequest the pending request
      */
-    public PendingRequest(HttpHost host, BasicHttpRequest request, Consumer<StereoHttpRequest> requestConsumer) {
-      infoIf(() -> "Created Pending Request to " + host.toHostString() + ", " + request.toString());
+    public PendingRequest(HttpHost host, StereoHttpRequestHandler nioHttpRequest) {
       this.host = host;
-      this.request = request;
-      this.requestConsumer = requestConsumer;
+      this.nioHttpRequest = nioHttpRequest;
     }
   }
 }

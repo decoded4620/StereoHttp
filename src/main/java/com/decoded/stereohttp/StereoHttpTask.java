@@ -15,7 +15,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Consumer;
 
 import static com.decoded.stereohttp.LoggingUtil.*;
 
@@ -31,7 +30,7 @@ import static com.decoded.stereohttp.LoggingUtil.*;
  * </pre>
  *
  * @param <T> the type to create using the underlying Http Response data  ({@link StereoResponse}) from a {@link
- *            StereoHttpRequest}.
+ *            StereoHttpRequestHandler}.
  */
 public class StereoHttpTask<T> {
   private static final Logger LOG = LoggerFactory.getLogger(StereoHttpTask.class);
@@ -46,6 +45,9 @@ public class StereoHttpTask<T> {
 
 
   private final StereoHttpClient stereoHttpClient;
+
+  private boolean useAsyncHttpClient = true;
+
   private final int timeout;
   private Map<Integer, Integer> statusRetries = new ConcurrentHashMap<>();
   private final long taskId;
@@ -128,7 +130,7 @@ public class StereoHttpTask<T> {
    *
    * @return a {@link CompletableFuture} of a {@link Feedback}&lt;T&gt;
    */
-  public <ID_T> CompletableFuture<Feedback<T>> execute(Class<T> type, RestRequest<T, ID_T> request) {
+  public <ID_T> CompletableFuture<Feedback<T>> execute(Class<T> type, StereoHttpRequest<T, ID_T> request) {
     return executeRequest(request, type, null);
   }
 
@@ -142,7 +144,7 @@ public class StereoHttpTask<T> {
    * @return a completable future.
    */
   public <ID_T> CompletableFuture<Feedback<List<T>>> executeBatch(TypeReference<List<T>> typeReference,
-      RestRequest<List<T>, ID_T> request) {
+      StereoHttpRequest<List<T>, ID_T> request) {
     debugIf(LOG, () -> taskLabel() + "executeBatch(): " + timeout + " ms");
     return executeRequest(request, null, typeReference);
   }
@@ -199,17 +201,19 @@ public class StereoHttpTask<T> {
    * Process the ok type feedback
    *
    * @param statusCode    the code
-   * @param feedback      the feedback object
    * @param clazz         the class to deserialize to
    * @param typeReference the type to deserialze to
    * @param response      the response
    * @param <X>           the type
    */
-  private <X> void process2xxResponseFeedback(int statusCode,
-      Feedback<X> feedback,
+  private <X> void buildFeedbackFor2xxResponse(int statusCode,
       Class<X> clazz,
+      Feedback<X> feedback,
       TypeReference<X> typeReference,
       StereoResponse response) {
+
+
+
     debugIf(LOG, () -> taskLabel() + "Process ok response feedback: " + statusCode);
     if (response == null) {
       setFeedbackResponseError(feedback, HttpStatus.SC_INTERNAL_SERVER_ERROR, "",
@@ -293,12 +297,12 @@ public class StereoHttpTask<T> {
   /**
    * Internal method to run the request.
    *
-   * @param httpRequest a {@link RestRequest}
+   * @param httpRequest a {@link StereoHttpRequest}
    * @param <ID_T>      the type of identifier used to locate the  content for the query.
    *
    * @return the type specified feedback object for this task.
    */
-  private <X, ID_T> CompletableFuture<Feedback<X>> executeRequest(RestRequest<X, ID_T> httpRequest,
+  private <X, ID_T> CompletableFuture<Feedback<X>> executeRequest(StereoHttpRequest<X, ID_T> httpRequest,
       Class<X> clazz,
       TypeReference<X> typeReference) {
     CompletableFuture<Feedback<X>> requestCompleteFuture = new CompletableFuture<>();
@@ -306,69 +310,66 @@ public class StereoHttpTask<T> {
 
     Runnable feedbackRunner = () -> {
       long start = requestStarted();
-      Feedback<X> feedback = new Feedback<>();
+
 
       debugIf(LOG, () -> taskLabel() + "StereoHttp Request running: [" + httpRequest.getRequestUri() + "]");
 
-      // response callback
-      Consumer<StereoResponse> httpResponseCallback = (stereoResponse) -> {
-        final int statusCode = stereoResponse.getRawHttpResponse().getStatusLine().getStatusCode();
+      StereoHttpRequestHandler stereoRequestHandler;
+      if(useAsyncHttpClient) {
+        if (RequestMethod.isWriteMethod(httpRequest.getRequestMethod())) {
+          stereoRequestHandler = stereoHttpClient.stereoApacheAsyncWriteRequest(httpRequest);
+        } else {
+          stereoRequestHandler = stereoHttpClient.stereoApacheAsyncReadRequest(httpRequest);
+        }
+      } else {
+        if (RequestMethod.isWriteMethod(httpRequest.getRequestMethod())) {
+          stereoRequestHandler = stereoHttpClient.stereoApacheNIOWriteRequest(httpRequest);
+        } else {
+          stereoRequestHandler = stereoHttpClient.stereoApacheNIOReadRequest(httpRequest);
+        }
+      }
+      Feedback<X> feedback = new Feedback<>();
+      debugIf(LOG, () -> taskLabel() + "Stereo Request Start: [" + httpRequest.getRequestUri() + "]");
+      stereoRequestHandler.map(response -> {
+        debugIf(LOG, () -> taskLabel() + "Stereo Response: [" + httpRequest.getRequestUri() + " (" + response.getRawHttpResponse()
+            .getStatusLine()
+            .getStatusCode() + ")]: \n---\n" + response.getContent() + "\n---");
+
+        final int statusCode = response.getRawHttpResponse().getStatusLine().getStatusCode();
         debugIf(LOG, () -> taskLabel() + "StereoHttp Response captured: " + httpRequest.getRequestUri() + " => " + statusCode);
 
         if(is2xxStatusCode(statusCode)) {
-          process2xxResponseFeedback(statusCode, feedback, clazz, typeReference, stereoResponse);
+          buildFeedbackFor2xxResponse(statusCode, clazz, feedback, typeReference, response);
         } else {
           if(isErrorCode(statusCode)) {
-            setFeedbackRequestError(feedback, statusCode, stereoResponse.getContent(), "Non 2xx Status: " + statusCode + "->" + httpRequest.getRequestUri());
+            setFeedbackRequestError(feedback, statusCode, response.getContent(), "Non 2xx Status: " + statusCode + "->" + httpRequest.getRequestUri());
           } else {
             LOG.info("Non Error, Non-2xx status: " + statusCode);
-            feedback.setSuccess(statusCode, null, stereoResponse.getContent());
+            feedback.setSuccess(statusCode, null, response.getContent());
           }
         }
-      };
 
-      Consumer<StereoHttpRequest> requestCreateCallback = stereoRequest -> {
-        debugIf(LOG, () -> taskLabel() + "Stereo Request Start: [" + httpRequest.getRequestUri() + "]");
-        stereoRequest.map(response -> {
-          debugIf(LOG, () -> taskLabel() + "Stereo Response: [" + httpRequest.getRequestUri() + " (" + response.getRawHttpResponse()
-              .getStatusLine()
-              .getStatusCode() + ")]: \n---\n" + response.getContent() + "\n---");
-          httpResponseCallback.accept(response);
-        }).exceptionally(ex -> {
-          LOG.warn(taskLabel() + "Stereo Raw Http Request Exception: " + ex.getClass().getName(), ex);
-          if(ex.getCause() instanceof ConnectException) {
-            setFeedbackRequestError(feedback, HttpStatus.SC_BAD_GATEWAY, null, "Exception occurred: ", ex);
-          } else {
-            setFeedbackRequestError(feedback, HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "Exception occurred: ", ex);
-          }
-        }).cancelling(() -> {
-          debugIf(LOG, () -> taskLabel() + "Stereo Request Cancelled");
-          feedback.cancel();
-        });
-      };
+      }).exceptionally(ex -> {
+        LOG.warn(taskLabel() + "Stereo Raw Http Request Exception: " + ex.getClass().getName(), ex);
+        if(ex.getCause() instanceof ConnectException) {
+          setFeedbackRequestError(feedback, HttpStatus.SC_BAD_GATEWAY, null, "Exception occurred: ", ex);
+        } else {
+          setFeedbackRequestError(feedback, HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "Exception occurred: ", ex);
+        }
+      }).cancelling(() -> {
+        debugIf(LOG, () -> taskLabel() + "Stereo Request Cancelled");
+        feedback.cancel();
+      });
 
-      if (RequestMethod.isWriteMethod(httpRequest.getRequestMethod())) {
-        if (httpRequest.isSecure()) {
-          stereoHttpClient.stereoSecureWrite(httpRequest, requestCreateCallback);
-        } else {
-          stereoHttpClient.stereoWriteRequest(httpRequest, requestCreateCallback);
-        }
-      } else {
-        if(httpRequest.isSecure()) {
-          stereoHttpClient.stereoSecureRead(httpRequest, requestCreateCallback);
-        } else {
-          stereoHttpClient.stereoReadRequest(httpRequest, requestCreateCallback);
-        }
-      }
 
       try {
-        LOG.info(taskLabel() + "Waiting for StereoHttp request to complete..." + httpRequest.getRequestUri());
+        infoIf(LOG, () -> taskLabel() + "Waiting for StereoHttp request to complete..." + httpRequest.getRequestUri());
         if (!feedback.await(timeout, TimeUnit.MILLISECONDS)) {
-          LOG.info(taskLabel() + "Request Timed out! " + httpRequest.getRequestUri());
+          infoIf(LOG, () -> taskLabel() + "Request Timed out! " + httpRequest.getRequestUri());
           setFeedbackRequestError(feedback, HttpStatus.SC_GATEWAY_TIMEOUT, "", "Request Timed out!");
         }
       } catch (InterruptedException ex) {
-        LOG.info(taskLabel() + "Request Interrupted: " + httpRequest.getRequestUri() + ", error: " + ex.getMessage());
+        infoIf(LOG, () -> taskLabel() + "Request Interrupted: " + httpRequest.getRequestUri() + ", error: " + ex.getMessage());
         setFeedbackRequestError(feedback, HttpStatus.SC_INTERNAL_SERVER_ERROR, "", "Http Request was interrupted");
       }
 
