@@ -6,7 +6,7 @@ https://decoded4620.github.io/StereoHttp/docs/javadoc/
 
 
 # Usage
-The easest way is to create a `RestRequest` using a `RestRequest.Builder`, and then create a new `StereoHttpTask`, passing the request, and `StereoHttpClient` instance in for execution. This assumes that the url you hit returns JSON serialized data that can be Deserialized into the provided type, e.g. User in the example below.
+The easest way is to create a `StereoHttpRequest` using a `StereoHttpRequest.Builder`, and then create a new `StereoHttpTask`, passing the request, and `StereoHttpClient` instance in for execution. This assumes that the url you hit returns JSON serialized data that can be Deserialized into the provided type, e.g. User in the example below.
 
 e.g.
 ```java
@@ -20,7 +20,7 @@ e.g.
  httpClient.start();
 
  // make requests with the same client (over and over)
- RestRequest.Builder<User> requestBuilder = new RestRequest.Builder<>(User.class)
+ StereoHttpRequest.Builder<User> requestBuilder = new StereoHttpRequest.Builder<>(User.class)
         .setRequestMethod(RequestMethod.GET)
         .setHost("mywebsite-api.com")
         .setPort(80)
