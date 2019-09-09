@@ -33,17 +33,21 @@ public class Feedback<T> extends CountDownLatch {
   }
 
   public Feedback<T> setSuccess(int status,  T deserializedContent, String serializedContent) {
-    debugIf(() -> "Stereo Feedback Success(" + status + ", " + deserializedContent.getClass() + ", " + serializedContent + ")");
     this.status = status;
     this.deserializedContent = deserializedContent;
     this.serializedContent = serializedContent;
 
+    debugIf(() -> "Stereo Feedback Success(" + status + ", " + (deserializedContent == null
+        ? ""
+        : deserializedContent.getClass().getName()) + ")");
     countDown();
     return this;
   }
 
   public Feedback<T> setError(int status, String serializedContent, Throwable cause) {
-    LOG.warn("Stereo Feedback Error(" + status + ", " + serializedContent.getClass() + ")", cause);
+    LOG.warn("Stereo Feedback Error(" + status + ", " + (serializedContent == null
+        ? ""
+        : serializedContent.getClass().getName()) + ")", cause);
     this.status = status;
     this.serializedContent = serializedContent;
     this.exception = cause;
