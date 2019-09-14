@@ -2,7 +2,6 @@ package com.decoded.stereohttp.engine;
 
 import com.decoded.stereohttp.*;
 import org.apache.http.client.methods.*;
-import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
@@ -83,7 +82,7 @@ public class ApacheHttpAsyncClientEngine {
     // Allow TLSv1 protocol only
     this.sslSessionStrategy = new SSLIOSessionStrategy(
         sslContext,
-        new String[] { SessionProtocols.TLSv1.name() },
+        new String[] { SSLSessionProtocols.TLSv1.name() },
         null,
         new NoopHostnameVerifier());
 
@@ -98,8 +97,7 @@ public class ApacheHttpAsyncClientEngine {
    * @return a {@link StereoHttpRequestHandler}
    */
   public StereoHttpRequestHandler executeRequest(Http.Scheme scheme, StereoHttpRequest<?,?> stereoHttpRequest) {
-    final String requestURI = scheme.getProtocol() + stereoHttpRequest.getHost()
-        + ':' + stereoHttpRequest.getPort()
+    final String requestURI = scheme.getProtocol() + stereoHttpRequest.getFullUrl()
         + stereoHttpRequest.getRequestUri();
 
     LoggingUtil.infoIf(LOG, () -> "AsyncEngine execute async request: " + requestURI);

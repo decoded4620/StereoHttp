@@ -1,5 +1,5 @@
 package com.decoded.stereohttp.engine;
 
-public enum SessionProtocols {
+public enum SSLSessionProtocols {
   TLSv1
 }

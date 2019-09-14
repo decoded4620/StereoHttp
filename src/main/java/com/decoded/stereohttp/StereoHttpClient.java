@@ -304,9 +304,9 @@ public class StereoHttpClient {
    * @param request the request
    */
   private StereoHttpRequestHandler sendHttpRequest(Http.Scheme scheme, String host, int port, HttpRequest request) {
-    infoIf(() -> ">> sending Apache NIO http request: [" + request.getRequestLine()
-        .getMethod() + "] " + host + ":" + port + request.getRequestLine().getUri());
     final HttpHost httpHost = new HttpHost(host, port, scheme.getProtocol());
+    infoIf(() -> ">> sending Apache NIO http request: [" + request.getRequestLine()
+        .getMethod() + "] " + httpHost.toHostString() + request.getRequestLine().getUri());
     final StereoHttpRequestHandler nioHttpRequest = new StereoHttpRequestHandler(request);
     if (this.state == ClientState.ONLINE) {
       nioHttpEngine.executeNIORequest(httpHost, nioHttpRequest);
@@ -360,7 +360,7 @@ public class StereoHttpClient {
    */
   private StereoHttpRequestHandler apacheNIOWrite(Http.Scheme scheme, StereoHttpRequest<?, ?> stereoHttpRequest) {
     infoIf(() -> "Capturing outgoing apacheNIOWrite request >> " + stereoHttpRequest.getRequestMethod()
-        .name() + " " + scheme + "://" + stereoHttpRequest.getHost() + ':' + stereoHttpRequest.getPort() + stereoHttpRequest
+        .name() + " " + scheme + "://" + stereoHttpRequest.getFullUrl() + stereoHttpRequest
         .getRequestUri());
     RequestMethod method = stereoHttpRequest.getRequestMethod();
 

@@ -168,6 +168,13 @@ public class StereoHttpRequest<T, ID_T> {
   }
 
   /**
+   * full url with host and port. Returns only the url if the port is not specified.
+   * @return
+   */
+  public String getFullUrl() {
+    return host + (port < 0 ? "" : ":" + port);
+  }
+  /**
    * the headers
    * @return map of headers.
    */
@@ -192,7 +199,7 @@ public class StereoHttpRequest<T, ID_T> {
   public static class Builder<T, ID_T> {
     private String host;
     private String body;
-    private int port;
+    private int port = -1;
     private String requestPath;
     private List<Pair<String, String>> requestParams = new ArrayList<>();
     private List<Pair<String, String>> formData = new ArrayList<>();

@@ -17,7 +17,7 @@
     catch(err) {
     }
 //-->
-var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10};
+var methods = {"i0":10,"i1":10,"i2":10,"i3":10,"i4":10,"i5":10,"i6":10,"i7":10,"i8":10,"i9":10,"i10":10,"i11":10,"i12":10,"i13":10};
 var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
 var altColor = "altColor";
 var rowColor = "rowColor";
@@ -191,60 +191,66 @@ extends java.lang.Object</pre>
 </td>
 </tr>
 <tr id="i3" class="rowColor">
+<td class="colFirst"><code>java.lang.String</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpRequest.html#getFullUrl--">getFullUrl</a></span>()</code>
+<div class="block">full url with host and port.</div>
+</td>
+</tr>
+<tr id="i4" class="altColor">
 <td class="colFirst"><code>java.util.Map&lt;java.lang.String,java.util.List&lt;java.lang.String&gt;&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpRequest.html#getHeaders--">getHeaders</a></span>()</code>
 <div class="block">the headers</div>
 </td>
 </tr>
-<tr id="i4" class="altColor">
+<tr id="i5" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpRequest.html#getHost--">getHost</a></span>()</code>
 <div class="block">The Host.</div>
 </td>
 </tr>
-<tr id="i5" class="rowColor">
+<tr id="i6" class="altColor">
 <td class="colFirst"><code>java.util.Set&lt;<a href="../../../com/decoded/stereohttp/StereoHttpRequest.html" title="type parameter in StereoHttpRequest">ID_T</a>&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpRequest.html#getIdentifiers--">getIdentifiers</a></span>()</code>
 <div class="block">The Request Identifiers.</div>
 </td>
 </tr>
-<tr id="i6" class="altColor">
+<tr id="i7" class="rowColor">
 <td class="colFirst"><code>int</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpRequest.html#getPort--">getPort</a></span>()</code>
 <div class="block">The port</div>
 </td>
 </tr>
-<tr id="i7" class="rowColor">
+<tr id="i8" class="altColor">
 <td class="colFirst"><code><a href="../../../com/decoded/stereohttp/RequestMethod.html" title="enum in com.decoded.stereohttp">RequestMethod</a></code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpRequest.html#getRequestMethod--">getRequestMethod</a></span>()</code>
 <div class="block"><a href="../../../com/decoded/stereohttp/RequestMethod.html" title="enum in com.decoded.stereohttp"><code>RequestMethod</code></a> for the request.</div>
 </td>
 </tr>
-<tr id="i8" class="altColor">
+<tr id="i9" class="rowColor">
 <td class="colFirst"><code>java.util.List&lt;com.decoded.javautil.Pair&lt;java.lang.String,java.lang.String&gt;&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpRequest.html#getRequestParams--">getRequestParams</a></span>()</code>
 <div class="block">Returns the request parameters.</div>
 </td>
 </tr>
-<tr id="i9" class="rowColor">
+<tr id="i10" class="altColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpRequest.html#getRequestPath--">getRequestPath</a></span>()</code>
 <div class="block">The request URI, including params.</div>
 </td>
 </tr>
-<tr id="i10" class="altColor">
+<tr id="i11" class="rowColor">
 <td class="colFirst"><code>java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpRequest.html#getRequestUri--">getRequestUri</a></span>()</code>
 <div class="block">Get Request Uri</div>
 </td>
 </tr>
-<tr id="i11" class="rowColor">
+<tr id="i12" class="altColor">
 <td class="colFirst"><code>java.util.List&lt;com.decoded.javautil.Pair&lt;java.lang.String,java.lang.String&gt;&gt;</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpRequest.html#getUrlEncodedFormData--">getUrlEncodedFormData</a></span>()</code>
 <div class="block">The form data if the content is url encoded form data.</div>
 </td>
 </tr>
-<tr id="i12" class="altColor">
+<tr id="i13" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../com/decoded/stereohttp/StereoHttpRequest.html#isSecure--">isSecure</a></span>()</code>
 <div class="block">Returns <code>true</code> for secure requests.</div>
@@ -445,6 +451,19 @@ extends java.lang.Object</pre>
 <dl>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>an int.</dd>
+</dl>
+</li>
+</ul>
+<a name="getFullUrl--">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>getFullUrl</h4>
+<pre>public&nbsp;java.lang.String&nbsp;getFullUrl()</pre>
+<div class="block">full url with host and port. Returns only the url if the port is not specified.</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
 </dl>
 </li>
 </ul>

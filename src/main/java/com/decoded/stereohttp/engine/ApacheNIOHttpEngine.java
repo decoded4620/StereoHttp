@@ -1,23 +1,18 @@
 package com.decoded.stereohttp.engine;
 
 import com.decoded.stereohttp.*;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.ConnectionClosedException;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.protocol.RequestAcceptEncoding;
 import org.apache.http.client.protocol.RequestDefaultHeaders;
 import org.apache.http.config.ConnectionConfig;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.impl.nio.DefaultHttpClientIODispatch;
 import org.apache.http.impl.nio.pool.BasicNIOConnPool;
 import org.apache.http.impl.nio.reactor.DefaultConnectingIOReactor;
 import org.apache.http.message.BasicHttpEntityEnclosingRequest;
 import org.apache.http.message.BasicHttpRequest;
-import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.nio.protocol.*;
 import org.apache.http.nio.reactor.ConnectingIOReactor;
 import org.apache.http.nio.reactor.IOEventDispatch;
@@ -28,11 +23,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InterruptedIOException;
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.Future;
 
 
@@ -40,23 +30,18 @@ import java.util.concurrent.Future;
  * This is an HTTP Engine for Apache Http NIO
  */
 public class ApacheNIOHttpEngine {
+  private final BasicNIOConnPool pool;
   private HttpAsyncRequester requester;
   private int maxOutboundConnectionsPerRoute = 10;
   private int maxOutboundConnections = 10;
-
   // Create client-side I/O reactor
   private ConnectingIOReactor ioReactor;
-
-  private IOEventDispatch ioEventDispatch;
   // Create HTTP connection pool
-
+  private IOEventDispatch ioEventDispatch;
   private Logger LOG = LoggerFactory.getLogger(ApacheNIOHttpEngine.class);
 
-  private final BasicNIOConnPool pool;
-
   public ApacheNIOHttpEngine() {
-    this.ioEventDispatch = new DefaultHttpClientIODispatch<>(new HttpAsyncRequestExecutor(),
-        ConnectionConfig.DEFAULT);
+    this.ioEventDispatch = new DefaultHttpClientIODispatch<>(new HttpAsyncRequestExecutor(), ConnectionConfig.DEFAULT);
     try {
       this.ioReactor = new DefaultConnectingIOReactor();
     } catch (IOReactorException ex) {
@@ -114,10 +99,10 @@ public class ApacheNIOHttpEngine {
     }
   }
 
-  public HttpRequest buildReadRequest(StereoHttpRequest<?,?> stereoHttpRequest) {
-    LoggingUtil.infoIf(LOG, () -> "Building nio read request >> " + stereoHttpRequest.getRequestMethod()
-        .name() + " => " + stereoHttpRequest.getHost() + ':' + stereoHttpRequest.getPort() + stereoHttpRequest
-        .getRequestUri());
+  public HttpRequest buildReadRequest(StereoHttpRequest<?, ?> stereoHttpRequest) {
+    LoggingUtil.infoIf(LOG,
+        () -> "Building nio read request >> " + stereoHttpRequest.getRequestMethod().name() + " => " + stereoHttpRequest
+            .getFullUrl() + stereoHttpRequest.getRequestUri());
     final BasicHttpRequest request = new BasicHttpRequest(stereoHttpRequest.getRequestMethod().methodName(),
         stereoHttpRequest.getRequestUri());
 
@@ -125,12 +110,12 @@ public class ApacheNIOHttpEngine {
     return request;
   }
 
-  public HttpRequest buildWriteRequest(RequestMethod method, StereoHttpRequest<?,?> stereoHttpRequest) {
+  public HttpRequest buildWriteRequest(RequestMethod method, StereoHttpRequest<?, ?> stereoHttpRequest) {
     LoggingUtil.infoIf(LOG, () -> "Building nio write request >> " + stereoHttpRequest.getRequestMethod()
-        .name() + " => " + stereoHttpRequest.getHost() + ':' + stereoHttpRequest.getPort() + stereoHttpRequest
-        .getRequestUri());
+        .name() + " => " + stereoHttpRequest.getFullUrl() + stereoHttpRequest.getRequestUri());
 
-    BasicHttpEntityEnclosingRequest httpRequest = new BasicHttpEntityEnclosingRequest(method.methodName(),  stereoHttpRequest.getRequestUri());
+    BasicHttpEntityEnclosingRequest httpRequest = new BasicHttpEntityEnclosingRequest(method.methodName(),
+        stereoHttpRequest.getRequestUri());
 
     StereoHttpUtils.copyHeadersAndCookies(stereoHttpRequest, httpRequest);
     StereoHttpUtils.copyFormData(stereoHttpRequest, httpRequest);
@@ -161,15 +146,18 @@ public class ApacheNIOHttpEngine {
    * Package private, only called by the HttpClient internally.
    *
    * @return this {@link StereoHttpRequestHandler}
+   *
    * @throws IllegalStateException if the http client is not initialized
    */
   public Future<HttpResponse> executeNIORequest(HttpHost httpHost, StereoHttpRequestHandler request) {
     if (requester == null) {
-      throw new IllegalStateException("StereoHttpRequest was null, which means the http client was not properly initialized.");
+      throw new IllegalStateException(
+          "StereoHttpRequest was null, which means the http client was not properly initialized.");
     }
     AbstractAsyncResponseConsumer<HttpResponse> responseConsumer = new BasicAsyncResponseConsumer();
-    LOG.info("executing NIO async http request @[" + httpHost.getSchemeName() + httpHost.getHostName() + ":" + httpHost.getPort() + "]");
-    return requester.execute(new BasicAsyncRequestProducer(httpHost, request.getRequest()), responseConsumer, pool, HttpCoreContext.create(),
-        request.getApacheHttpCallback());
+    LoggingUtil.infoIf(LOG,
+        () -> "executing NIO async http request @[" + httpHost.getSchemeName() + httpHost.toHostString() + "]");
+    return requester.execute(new BasicAsyncRequestProducer(httpHost, request.getRequest()), responseConsumer, pool,
+        HttpCoreContext.create(), request.getApacheHttpCallback());
   }
 }
