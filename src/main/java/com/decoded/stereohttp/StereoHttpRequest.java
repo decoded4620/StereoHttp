@@ -169,7 +169,7 @@ public class StereoHttpRequest<T, ID_T> {
 
   /**
    * full url with host and port. Returns only the url if the port is not specified.
-   * @return
+   * @return the full url.
    */
   public String getFullUrl() {
     return host + (port < 0 ? "" : ":" + port);

@@ -16,7 +16,8 @@ import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static com.decoded.stereohttp.LoggingUtil.*;
+import static com.decoded.stereohttp.LoggingUtil.debugIf;
+import static com.decoded.stereohttp.LoggingUtil.infoIf;
 
 
 /**
@@ -43,14 +44,11 @@ public class StereoHttpTask<T> {
   private static final AtomicLong MAX_CONCURRENT_REQUESTS = new AtomicLong(0);
   private static final AtomicLong TOTAL_REQUESTS = new AtomicLong(0);
 
-
   private final StereoHttpClient stereoHttpClient;
-
-  private boolean useAsyncHttpClient = true;
-
   private final int timeout;
-  private Map<Integer, Integer> statusRetries = new ConcurrentHashMap<>();
   private final long taskId;
+  private boolean useAsyncHttpClient = true;
+  private Map<Integer, Integer> statusRetries = new ConcurrentHashMap<>();
 
   /**
    * StereoHttpTask
@@ -62,18 +60,6 @@ public class StereoHttpTask<T> {
     this.stereoHttpClient = stereoHttpClient;
     this.timeout = timeout;
     this.taskId = NEXT_TASK_ID.getAndIncrement();
-  }
-
-  /**
-   * The task id.
-   * @return the identifier of this stereo task.
-   */
-  public long getTaskId() {
-    return taskId;
-  }
-
-  private String taskLabel() {
-    return "[stereotask " + taskId + "] ";
   }
 
   /**
@@ -122,9 +108,22 @@ public class StereoHttpTask<T> {
   }
 
   /**
+   * The task id.
+   *
+   * @return the identifier of this stereo task.
+   */
+  public long getTaskId() {
+    return taskId;
+  }
+
+  private String taskLabel() {
+    return "[stereotask " + taskId + "] ";
+  }
+
+  /**
    * Execute the restRequest.
    *
-   * @param type the class for the type of response that is being returned by this class. (unserialized type).
+   * @param type    the class for the type of response that is being returned by this class. (unserialized type).
    * @param request the restRequest
    * @param <ID_T>  the identifier type for the request. Used as a pass through here.
    *
@@ -166,7 +165,7 @@ public class StereoHttpTask<T> {
    * @param feedback   the feedback
    * @param statusCode the status
    * @param response   the response
-   * @param message the error message
+   * @param message    the error message
    */
   private <X> void setFeedbackResponseError(Feedback<X> feedback,
       int statusCode,
@@ -211,9 +210,6 @@ public class StereoHttpTask<T> {
       Feedback<X> feedback,
       TypeReference<X> typeReference,
       StereoResponse response) {
-
-
-
     debugIf(LOG, () -> taskLabel() + "Process ok response feedback: " + statusCode);
     if (response == null) {
       setFeedbackResponseError(feedback, HttpStatus.SC_INTERNAL_SERVER_ERROR, "",
@@ -295,6 +291,18 @@ public class StereoHttpTask<T> {
   }
 
   /**
+   * Returns the request line for a stereo request for output
+   *
+   * @param stereoHttpRequest the request
+   *
+   * @return a string, the request line for debugging / logging output.
+   */
+  private String getRequestLine(StereoHttpRequest stereoHttpRequest) {
+    return stereoHttpRequest.getRequestMethod()
+        .name() + " " + stereoHttpRequest.getFullUrl() + stereoHttpRequest.getRequestUri();
+  }
+
+  /**
    * Internal method to run the request.
    *
    * @param httpRequest a {@link StereoHttpRequest}
@@ -311,11 +319,10 @@ public class StereoHttpTask<T> {
     Runnable feedbackRunner = () -> {
       long start = requestStarted();
 
-
       debugIf(LOG, () -> taskLabel() + "StereoHttp Request running: [" + httpRequest.getRequestUri() + "]");
 
       StereoHttpRequestHandler stereoRequestHandler;
-      if(useAsyncHttpClient) {
+      if (useAsyncHttpClient) {
         if (RequestMethod.isWriteMethod(httpRequest.getRequestMethod())) {
           stereoRequestHandler = stereoHttpClient.stereoApacheAsyncWriteRequest(httpRequest);
         } else {
@@ -328,48 +335,54 @@ public class StereoHttpTask<T> {
           stereoRequestHandler = stereoHttpClient.stereoApacheNIOReadRequest(httpRequest);
         }
       }
+
       Feedback<X> feedback = new Feedback<>();
       debugIf(LOG, () -> taskLabel() + "Stereo Request Start: [" + httpRequest.getRequestUri() + "]");
       stereoRequestHandler.map(response -> {
-        debugIf(LOG, () -> taskLabel() + "Stereo Response: [" + httpRequest.getRequestUri() + " (" + response.getRawHttpResponse()
-            .getStatusLine()
-            .getStatusCode() + ")]: \n---\n" + response.getContent() + "\n---");
+        debugIf(LOG,
+            () -> taskLabel() + "Stereo Response: [" + httpRequest.getRequestUri() + " (" + response.getRawHttpResponse()
+                .getStatusLine()
+                .getStatusCode() + ")]: \n---\n" + response.getContent() + "\n---");
 
         final int statusCode = response.getRawHttpResponse().getStatusLine().getStatusCode();
-        debugIf(LOG, () -> taskLabel() + "StereoHttp Response captured: " + httpRequest.getRequestUri() + " => " + statusCode);
+        debugIf(LOG,
+            () -> taskLabel() + "StereoHttp Response captured: " + httpRequest.getRequestUri() + " => " + statusCode);
 
-        if(is2xxStatusCode(statusCode)) {
+        if (is2xxStatusCode(statusCode)) {
           buildFeedbackFor2xxResponse(statusCode, clazz, feedback, typeReference, response);
         } else {
-          if(isErrorCode(statusCode)) {
-            setFeedbackRequestError(feedback, statusCode, response.getContent(), "Non 2xx Status: " + statusCode + "->" + httpRequest.getRequestUri());
+          if (isErrorCode(statusCode)) {
+            setFeedbackRequestError(feedback, statusCode, response.getContent(),
+                "Non 2xx Status: " + statusCode + "->" + getRequestLine(httpRequest));
           } else {
-            LOG.info("Non Error, Non-2xx status: " + statusCode);
+            infoIf(LOG, () -> "Non Error, Non-2xx status: " + statusCode + " for url " + getRequestLine(httpRequest));
             feedback.setSuccess(statusCode, null, response.getContent());
           }
         }
 
       }).exceptionally(ex -> {
         LOG.warn(taskLabel() + "Stereo Raw Http Request Exception: " + ex.getClass().getName(), ex);
-        if(ex.getCause() instanceof ConnectException) {
-          setFeedbackRequestError(feedback, HttpStatus.SC_BAD_GATEWAY, null, "Exception occurred: ", ex);
+        if (ex.getCause() instanceof ConnectException) {
+          setFeedbackRequestError(feedback, HttpStatus.SC_BAD_GATEWAY, null,
+              "Bad Gateway Error occurred calling url " + getRequestLine(httpRequest), ex);
         } else {
-          setFeedbackRequestError(feedback, HttpStatus.SC_INTERNAL_SERVER_ERROR, null, "Exception occurred: ", ex);
+          setFeedbackRequestError(feedback, HttpStatus.SC_INTERNAL_SERVER_ERROR, null,
+              "Internal Server Error occurred calling url " + getRequestLine(httpRequest), ex);
         }
       }).cancelling(() -> {
-        debugIf(LOG, () -> taskLabel() + "Stereo Request Cancelled");
+        infoIf(LOG, () -> taskLabel() + "Stereo Request Cancelled calling url " + getRequestLine(httpRequest));
         feedback.cancel();
       });
-
 
       try {
         infoIf(LOG, () -> taskLabel() + "Waiting for StereoHttp request to complete..." + httpRequest.getRequestUri());
         if (!feedback.await(timeout, TimeUnit.MILLISECONDS)) {
-          infoIf(LOG, () -> taskLabel() + "Request Timed out! " + httpRequest.getRequestUri());
+          infoIf(LOG, () -> taskLabel() + "Request Timed out! " + getRequestLine(httpRequest));
           setFeedbackRequestError(feedback, HttpStatus.SC_GATEWAY_TIMEOUT, "", "Request Timed out!");
         }
       } catch (InterruptedException ex) {
-        infoIf(LOG, () -> taskLabel() + "Request Interrupted: " + httpRequest.getRequestUri() + ", error: " + ex.getMessage());
+        infoIf(LOG,
+            () -> taskLabel() + "Request Interrupted: " + getRequestLine(httpRequest) + ", error: " + ex.getMessage());
         setFeedbackRequestError(feedback, HttpStatus.SC_INTERNAL_SERVER_ERROR, "", "Http Request was interrupted");
       }
 

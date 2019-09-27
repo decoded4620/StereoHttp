@@ -255,6 +255,7 @@ public class StereoHttpClient {
    * Http Immutable apacheNIORead object used to handled non-blocking io
    *
    * @param stereoHttpRequest the request
+   * @return StereoHttpRequestHandler
    */
   public StereoHttpRequestHandler stereoApacheNIOReadRequest(StereoHttpRequest stereoHttpRequest) {
     if (stereoHttpRequest.isSecure()) {
@@ -269,6 +270,7 @@ public class StereoHttpClient {
    *
    * @param stereoHttpRequest a rest request.
    *
+   * @return StereoHttpRequestHandler
    * @see StereoHttpClient#stereoApacheNIOReadRequest(StereoHttpRequest)
    */
   public StereoHttpRequestHandler stereoApacheNIOWriteRequest(StereoHttpRequest stereoHttpRequest) {
@@ -342,6 +344,7 @@ public class StereoHttpClient {
    *
    * @param stereoHttpRequest the request
    * @param scheme            the scheme
+   * @return a {@link StereoHttpRequestHandler}
    */
   private StereoHttpRequestHandler apacheAsyncRead(Http.Scheme scheme, StereoHttpRequest stereoHttpRequest) {
     if (!RequestMethod.isWriteMethod(stereoHttpRequest.getRequestMethod())) {
@@ -357,6 +360,7 @@ public class StereoHttpClient {
    *
    * @param scheme            the scheme to apacheNIOWrite
    * @param stereoHttpRequest the rest request.
+   * @return a {@link StereoHttpRequestHandler}
    */
   private StereoHttpRequestHandler apacheNIOWrite(Http.Scheme scheme, StereoHttpRequest<?, ?> stereoHttpRequest) {
     infoIf(() -> "Capturing outgoing apacheNIOWrite request >> " + stereoHttpRequest.getRequestMethod()

@@ -147,7 +147,9 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i0" class="altColor">
 <td class="colFirst"><code>org.apache.http.HttpRequest</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../com/decoded/stereohttp/engine/ApacheNIOHttpEngine.html#buildReadRequest-com.decoded.stereohttp.StereoHttpRequest-">buildReadRequest</a></span>(<a href="../../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp">StereoHttpRequest</a>&lt;?,?&gt;&nbsp;stereoHttpRequest)</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../com/decoded/stereohttp/engine/ApacheNIOHttpEngine.html#buildReadRequest-com.decoded.stereohttp.StereoHttpRequest-">buildReadRequest</a></span>(<a href="../../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp">StereoHttpRequest</a>&lt;?,?&gt;&nbsp;stereoHttpRequest)</code>
+<div class="block">Builds a read request</div>
+</td>
 </tr>
 <tr id="i1" class="rowColor">
 <td class="colFirst"><code>org.apache.http.HttpRequest</code></td>
@@ -179,11 +181,15 @@ extends java.lang.Object</pre>
 </tr>
 <tr id="i6" class="altColor">
 <td class="colFirst"><code>void</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../com/decoded/stereohttp/engine/ApacheNIOHttpEngine.html#shutdown--">shutdown</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../com/decoded/stereohttp/engine/ApacheNIOHttpEngine.html#shutdown--">shutdown</a></span>()</code>
+<div class="block">Shutdown the engine</div>
+</td>
 </tr>
 <tr id="i7" class="rowColor">
 <td class="colFirst"><code>boolean</code></td>
-<td class="colLast"><code><span class="memberNameLink"><a href="../../../../com/decoded/stereohttp/engine/ApacheNIOHttpEngine.html#start--">start</a></span>()</code>&nbsp;</td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../../com/decoded/stereohttp/engine/ApacheNIOHttpEngine.html#start--">start</a></span>()</code>
+<div class="block">Start the engine</div>
+</td>
 </tr>
 </table>
 <ul class="blockList">
@@ -240,6 +246,11 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>start</h4>
 <pre>public&nbsp;boolean&nbsp;start()</pre>
+<div class="block">Start the engine</div>
+<dl>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd><code>true</code> if the engine started.</dd>
+</dl>
 </li>
 </ul>
 <a name="shutdown--">
@@ -249,6 +260,7 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>shutdown</h4>
 <pre>public&nbsp;void&nbsp;shutdown()</pre>
+<div class="block">Shutdown the engine</div>
 </li>
 </ul>
 <a name="buildReadRequest-com.decoded.stereohttp.StereoHttpRequest-">
@@ -258,6 +270,13 @@ extends java.lang.Object</pre>
 <li class="blockList">
 <h4>buildReadRequest</h4>
 <pre>public&nbsp;org.apache.http.HttpRequest&nbsp;buildReadRequest(<a href="../../../../com/decoded/stereohttp/StereoHttpRequest.html" title="class in com.decoded.stereohttp">StereoHttpRequest</a>&lt;?,?&gt;&nbsp;stereoHttpRequest)</pre>
+<div class="block">Builds a read request</div>
+<dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>stereoHttpRequest</code> - the stereo http request.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>an <code>HttpRequest</code></dd>
+</dl>
 </li>
 </ul>
 <a name="buildWriteRequest-com.decoded.stereohttp.RequestMethod-com.decoded.stereohttp.StereoHttpRequest-">
@@ -308,6 +327,9 @@ extends java.lang.Object</pre>
                                                                                    <a href="../../../../com/decoded/stereohttp/StereoHttpRequestHandler.html" title="class in com.decoded.stereohttp">StereoHttpRequestHandler</a>&nbsp;request)</pre>
 <div class="block">Package private, only called by the HttpClient internally.</div>
 <dl>
+<dt><span class="paramLabel">Parameters:</span></dt>
+<dd><code>httpHost</code> - the host</dd>
+<dd><code>request</code> - the stereo request</dd>
 <dt><span class="returnLabel">Returns:</span></dt>
 <dd>this <a href="../../../../com/decoded/stereohttp/StereoHttpRequestHandler.html" title="class in com.decoded.stereohttp"><code>StereoHttpRequestHandler</code></a></dd>
 <dt><span class="throwsLabel">Throws:</span></dt>

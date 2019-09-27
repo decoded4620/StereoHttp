@@ -71,6 +71,10 @@ public class ApacheNIOHttpEngine {
         .build());
   }
 
+  /**
+   * Start the engine
+   * @return <code>true</code> if the engine started.
+   */
   public boolean start() {
     // Ready to go!
     try {
@@ -90,6 +94,9 @@ public class ApacheNIOHttpEngine {
     return true;
   }
 
+  /**
+   * Shutdown the engine
+   */
   public void shutdown() {
     try {
       LOG.warn("ApacheNIOHttpEngine is shutting down");
@@ -99,6 +106,11 @@ public class ApacheNIOHttpEngine {
     }
   }
 
+  /**
+   * Builds a read request
+   * @param stereoHttpRequest the stereo http request.
+   * @return an {@link HttpRequest}
+   */
   public HttpRequest buildReadRequest(StereoHttpRequest<?, ?> stereoHttpRequest) {
     LoggingUtil.infoIf(LOG,
         () -> "Building nio read request >> " + stereoHttpRequest.getRequestMethod().name() + " => " + stereoHttpRequest
@@ -145,6 +157,8 @@ public class ApacheNIOHttpEngine {
   /**
    * Package private, only called by the HttpClient internally.
    *
+   * @param httpHost the host
+   * @param request the stereo request
    * @return this {@link StereoHttpRequestHandler}
    *
    * @throws IllegalStateException if the http client is not initialized

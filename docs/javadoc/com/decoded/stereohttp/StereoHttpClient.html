@@ -291,8 +291,8 @@ extends java.lang.Object</pre>
 <h4>StereoHttpClient</h4>
 <pre>@Inject
 public&nbsp;StereoHttpClient(<a href="../../../com/decoded/stereohttp/engine/ApacheNIOHttpEngine.html" title="class in com.decoded.stereohttp.engine">ApacheNIOHttpEngine</a>&nbsp;nioHttpEngine,
-                                <a href="../../../com/decoded/stereohttp/engine/ApacheHttpAsyncClientEngine.html" title="class in com.decoded.stereohttp.engine">ApacheHttpAsyncClientEngine</a>&nbsp;asyncClientEngine,
-                                java.util.concurrent.ExecutorService&nbsp;executorService)</pre>
+                                 <a href="../../../com/decoded/stereohttp/engine/ApacheHttpAsyncClientEngine.html" title="class in com.decoded.stereohttp.engine">ApacheHttpAsyncClientEngine</a>&nbsp;asyncClientEngine,
+                                 java.util.concurrent.ExecutorService&nbsp;executorService)</pre>
 </li>
 </ul>
 </li>
@@ -434,6 +434,8 @@ public&nbsp;StereoHttpClient(<a href="../../../com/decoded/stereohttp/engine/Apa
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>stereoHttpRequest</code> - the request</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>StereoHttpRequestHandler</dd>
 </dl>
 </li>
 </ul>
@@ -448,6 +450,8 @@ public&nbsp;StereoHttpClient(<a href="../../../com/decoded/stereohttp/engine/Apa
 <dl>
 <dt><span class="paramLabel">Parameters:</span></dt>
 <dd><code>stereoHttpRequest</code> - a rest request.</dd>
+<dt><span class="returnLabel">Returns:</span></dt>
+<dd>StereoHttpRequestHandler</dd>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../com/decoded/stereohttp/StereoHttpClient.html#stereoApacheNIOReadRequest-com.decoded.stereohttp.StereoHttpRequest-"><code>stereoApacheNIOReadRequest(StereoHttpRequest)</code></a></dd>
 </dl>
