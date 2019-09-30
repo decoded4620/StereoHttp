@@ -97,13 +97,16 @@ public class StereoHttpRequest<T, ID_T> {
   private String getRequestParameters() {
     if (!requestParams.isEmpty()) {
       StringBuilder paramsBuilder = new StringBuilder("?");
-      requestParams.forEach(pair -> {
+      requestParams.stream().filter(Objects::nonNull).forEach(pair -> {
         if (paramsBuilder.length() > 1) {
           paramsBuilder.append("&");
         }
         String correctedV;
         try {
-           correctedV = URLEncoder.encode(pair.getValue(), Charset.defaultCharset().name());
+          if(pair.getValue() == null) {
+            LOG.warn("UrL param " + pair.getKey() + " has a null value");
+          }
+           correctedV = URLEncoder.encode(pair.getValue() == null ? "" : pair.getValue(), Charset.defaultCharset().name());
         } catch (UnsupportedEncodingException ex) {
           LOG.warn("Key " + pair.getKey() + " could not be encoded!", ex);
           correctedV = "";
