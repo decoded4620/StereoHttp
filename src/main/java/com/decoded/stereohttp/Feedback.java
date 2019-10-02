@@ -6,16 +6,16 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
-import java.util.function.Supplier;
+import java.util.concurrent.TimeUnit;
 
 
 /**
- * This is a Stereo Http Object that accepts both the result and / or any exceptions during executions, to propagate
- * to the caller.
+ * This is a Stereo Http Object that accepts both the result and / or any exceptions during executions, to propagate to
+ * the caller.
  *
  * @param <T> the target type returned by the request.
  */
-public class Feedback<T> extends CountDownLatch {
+public class Feedback<T> {
   private static final Logger LOG = LoggerFactory.getLogger(Feedback.class);
 
   private T deserializedContent;
@@ -24,23 +24,24 @@ public class Feedback<T> extends CountDownLatch {
   private Throwable exception;
   private boolean cancelled;
 
+  private CountDownLatch latch = new CountDownLatch(1);
+
   public Feedback() {
-    super(1);
   }
 
   public boolean failed() {
     return exception != null && !cancelled;
   }
 
-  public Feedback<T> setSuccess(int status,  T deserializedContent, String serializedContent) {
+  public Feedback<T> setSuccess(int status, T deserializedContent, String serializedContent) {
     this.status = status;
     this.deserializedContent = deserializedContent;
     this.serializedContent = serializedContent;
 
-    debugIf(() -> "Stereo Feedback Success(" + status + ", " + (deserializedContent == null
+    LoggingUtil.debugIf(LOG, () -> "Stereo Feedback Success(" + status + ", " + (deserializedContent == null
         ? ""
         : deserializedContent.getClass().getName()) + ")");
-    countDown();
+    latch.countDown();
     return this;
   }
 
@@ -51,7 +52,7 @@ public class Feedback<T> extends CountDownLatch {
     this.status = status;
     this.serializedContent = serializedContent;
     this.exception = cause;
-    countDown();
+    latch.countDown();
     return this;
   }
 
@@ -59,26 +60,30 @@ public class Feedback<T> extends CountDownLatch {
     LOG.warn("Stereo Feedback Cancel()");
     this.cancelled = true;
     this.serializedContent = "{ \"error\":\"Request cancelled\"}";
-
     this.status = HttpStatus.SC_REQUEST_TIMEOUT;
-    countDown();
+    latch.countDown();
     return this;
-  }
-
-  private static void debugIf(Supplier<String> message) {
-    if (LOG.isDebugEnabled()) {
-      LOG.debug("{" + Thread.currentThread().getName() + "}:" + message.get());
-    }
-  }
-
-  @Override
-  public void countDown() {
-    debugIf(() -> "Count Down from: " + this.getCount());
-    super.countDown();
   }
 
   public int getStatus() {
     return status;
+  }
+
+  /**
+   * Wait for feedback to be complete.
+   *
+   * @param timeout  number of time units to wait
+   * @param timeUnit the time unit, e.g. Milliseconds
+   *
+   * @return true if we were able to wait out the entire request.
+   */
+  public boolean await(long timeout, TimeUnit timeUnit) {
+    try {
+      return latch.await(timeout, timeUnit);
+    } catch (InterruptedException ex) {
+      LOG.warn("Interrupted while waiting");
+      return false;
+    }
   }
 
   public Optional<T> getDeserializedContent() {
