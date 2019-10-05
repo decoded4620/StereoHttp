@@ -374,16 +374,10 @@ public class StereoHttpTask<T> {
         feedback.cancel();
       });
 
-      try {
-        infoIf(LOG, () -> taskLabel() + "Waiting for StereoHttp request to complete..." + httpRequest.getRequestUri());
-        if (!feedback.await(timeout, TimeUnit.MILLISECONDS)) {
-          infoIf(LOG, () -> taskLabel() + "Request Timed out! " + getRequestLine(httpRequest));
-          setFeedbackRequestError(feedback, HttpStatus.SC_GATEWAY_TIMEOUT, "", "Request Timed out!");
-        }
-      } catch (InterruptedException ex) {
-        infoIf(LOG,
-            () -> taskLabel() + "Request Interrupted: " + getRequestLine(httpRequest) + ", error: " + ex.getMessage());
-        setFeedbackRequestError(feedback, HttpStatus.SC_INTERNAL_SERVER_ERROR, "", "Http Request was interrupted");
+      infoIf(LOG, () -> taskLabel() + "Waiting for StereoHttp request to complete..." + httpRequest.getRequestUri());
+      if (!feedback.await(timeout, TimeUnit.MILLISECONDS)) {
+        infoIf(LOG, () -> taskLabel() + "Request Timed out! " + getRequestLine(httpRequest));
+        setFeedbackRequestError(feedback, HttpStatus.SC_GATEWAY_TIMEOUT, "", "Request Timed out!");
       }
 
       requestCompleted(start);
