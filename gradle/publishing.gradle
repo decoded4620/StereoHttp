@@ -37,14 +37,14 @@ publishing {
     publications {
         maven(MavenPublication) {
             groupId = 'com.decoded'
-            artifactId = 'stereohttp'
+            artifactId = 'StereoHttp'
             version = '1.0'
 
             from components.java
         }
 
         mavenJava(MavenPublication) {
-            artifactId = 'stereohttp'
+            artifactId = 'StereoHttp'
             from components.java
             artifact sourcesJar
             artifact javadocJar
