@@ -9,7 +9,7 @@ ext {
     apacheHttpCoreVersion = "4.4.11"
 
     guiceVersion = "4.0"
-    jacksonVersion = "2.9.7"
+    jacksonVersion = "2.9.10.1"
     appDependencies = [
             guice                : "com.google.inject:guice:$guiceVersion",
             apacheCommons3       : "org.apache.commons:commons-lang3:3.0",
@@ -17,8 +17,8 @@ ext {
             apacheHttpClient     : "org.apache.httpcomponents:httpasyncclient:$apacheHttpAsyncClientVersion",
             apacheHttpCoreNio    : "org.apache.httpcomponents:httpcore-nio:$apacheHttpCoreVersion",
             jacksonDataBind      : "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion",
-            jacksonDataFormatYAML: "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion",
-            jacksonDataFormatXML : "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:$jacksonVersion"
+            jacksonDataFormatYAML: "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.7.0",
+            jacksonDataFormatXML : "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.7.0"
     ]
 
     testDependencies = [
